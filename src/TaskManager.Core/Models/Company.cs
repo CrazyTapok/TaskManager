@@ -1,4 +1,5 @@
 ﻿namespace TaskManager.Core.Models;
+
 public class Company
 {
     public Guid Id { get; set; }

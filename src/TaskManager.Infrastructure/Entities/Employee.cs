@@ -1,6 +1,7 @@
 ﻿using TaskManager.Core.Enums;
 
 namespace TaskManager.Infrastructure.Entities;
+
 public class Employee
 {
     public Guid Id { get; set; }

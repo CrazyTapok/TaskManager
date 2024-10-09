@@ -1,6 +1,7 @@
 ﻿using TaskStatus = TaskManager.Core.Enums.TaskStatus;
 
 namespace TaskManager.Core.Models;
+
 public class Task
 {
     public Guid Id { get; set; }

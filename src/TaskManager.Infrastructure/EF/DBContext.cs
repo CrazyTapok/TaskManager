@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Task = TaskManager.Infrastructure.Entities.Task;
 
 namespace TaskManager.Infrastructure.EF;
+
 public class DBContext : DbContext
 {
     public DbSet<Company> Companies { get; set; } = null!;
@@ -14,8 +15,8 @@ public class DBContext : DbContext
     public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {
-        //Database.EnsureDeleted();
-        //Database.EnsureCreated();
+        Database.EnsureDeleted();
+        Database.EnsureCreated();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

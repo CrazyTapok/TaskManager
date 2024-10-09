@@ -21,7 +21,7 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
 
         builder.Property(t => t.CreatedDate)
             .HasColumnType("datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("GETUTCDATE()");
 
         builder.Property(t => t.UpdatedDate)
             .HasColumnType("datetime");

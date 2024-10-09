@@ -1,4 +1,5 @@
 ﻿namespace TaskManager.Core.Models;
+
 public class Project
 {
     public Guid Id { get; set; }

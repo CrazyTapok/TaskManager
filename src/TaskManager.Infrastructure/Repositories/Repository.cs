@@ -22,7 +22,7 @@ internal class Repository<TEntity, TModel> : IRepository<TEntity, TModel> where 
         return entities.Map<TEntity, TModel>();
     }
 
-    public async Task<TModel> GetByIdAsync(int id)
+    public async Task<TModel> GetByIdAsync(Guid id)
     {
         var entity = await _dbSet.FindAsync(id);
 
@@ -42,15 +42,15 @@ internal class Repository<TEntity, TModel> : IRepository<TEntity, TModel> where 
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(TModel model)
+    public Task UpdateAsync(TModel model)
     {
         var entity = model.Map<TModel, TEntity>();
         _context.Entry(entity).State = EntityState.Modified;
-       
-        await _context.SaveChangesAsync();
+
+        return _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(Guid id)
     {
         var entity = await _dbSet.FindAsync(id);
         if (entity != null)

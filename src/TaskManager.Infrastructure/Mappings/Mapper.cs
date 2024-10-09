@@ -5,7 +5,7 @@ namespace TaskManager.Infrastructure.Mappings;
 [Mapper]
 public static partial class Mapper
 {
-    public static partial T Map<K, T>(this K entity);
+    public static partial TResult Map<TSource, TResult>(this TSource entity);
 
-    public static partial IEnumerable<T> Map<K, T>(this IEnumerable<K> entity);
+    public static partial IEnumerable<TResult> Map<TSource, TResult>(this IEnumerable<TSource> entity);
 }
