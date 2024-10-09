@@ -1,60 +1,63 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Interfaces;
 using TaskManager.Infrastructure.EF;
+using TaskManager.Infrastructure.Mappings;
 
-namespace TaskManager.Infrastructure.Repositories
+namespace TaskManager.Infrastructure.Repositories;
+
+internal class Repository<TEntity, TModel> : IRepository<TEntity, TModel> where TEntity : class where TModel : class
 {
-    public class Repository<TEntity, TModels> : IRepository<TEntity, TModels> where TEntity : class where TModels : class
+    protected readonly DBContext _context;
+    private readonly DbSet<TEntity> _dbSet;
+    public Repository(DBContext context) 
     {
-        protected readonly DBContext _context;
-        private readonly IMapper _mapper;
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _dbSet = _context.Set<TEntity>();
+    }
 
-        public Repository(DBContext context, IMapper mapper) 
+    public async Task<IEnumerable<TModel>> GetAllAsync()
+    {
+        var entities = await _dbSet.ToListAsync();
+
+        return entities.Map<TEntity, TModel>();
+    }
+
+    public async Task<TModel> GetByIdAsync(int id)
+    {
+        var entity = await _dbSet.FindAsync(id);
+
+        if (entity != null)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapper = mapper ?? throw new ArgumentException(nameof(mapper));
+            return entity.Map<TEntity, TModel>();
         }
 
-        public async Task<IEnumerable<TModels>> GetAllAsync()
-        {
-            var entities = await _context.Set<TEntity>().ToListAsync();
-           
-            return _mapper.Map<IEnumerable<TModels>>(entities);
-        }
+        return null;
+    }
 
-        public async Task<TModels> GetByIdAsync(int id)
-        {
-            var entity = await _context.Set<TEntity>().FindAsync(id);
-           
-            return _mapper.Map<TModels>(entity);
-        }
+    public async Task AddAsync(TModel model)
+    {
+        var entity = model.Map<TModel, TEntity>();
+        await _dbSet.AddAsync(entity);
+      
+        await _context.SaveChangesAsync();
+    }
 
-        public async Task AddAsync(TModels dto)
+    public async Task UpdateAsync(TModel model)
+    {
+        var entity = model.Map<TModel, TEntity>();
+        _context.Entry(entity).State = EntityState.Modified;
+       
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var entity = await _dbSet.FindAsync(id);
+        if (entity != null)
         {
-            var entity = _mapper.Map<TEntity>(dto);
-            _context.Set<TEntity>().Add(entity);
-          
+            _dbSet.Remove(entity);
+            
             await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(TModels dto)
-        {
-            var entity = _mapper.Map<TEntity>(dto);
-            _context.Entry(entity).State = EntityState.Modified;
-           
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await _context.Set<TEntity>().FindAsync(id);
-            if (entity != null)
-            {
-                _context.Set<TEntity>().Remove(entity);
-                
-                await _context.SaveChangesAsync();
-            }
         }
     }
 }

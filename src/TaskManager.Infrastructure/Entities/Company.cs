@@ -1,14 +1,12 @@
-﻿
-namespace TaskManager.Infrastructure.Entities
+﻿namespace TaskManager.Infrastructure.Entities;
+
+public class Company
 {
-    public class Company
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public string Title { get; set; }
+    public string Title { get; set; }
 
-        public List<Project> Projects { get; set; }
+    public List<Project> Projects { get; set; }
 
-        public List<Employee> Employees { get; set; }
-    }
+    public List<Employee> Employees { get; set; }
 }

@@ -1,12 +1,9 @@
-﻿
-namespace TaskManager.Core.Interfaces
+﻿namespace TaskManager.Core.Interfaces;
+public interface IRepository<TEntity, TModel> where TEntity : class where TModel : class
 {
-    public interface IRepository<TEntity, TModels> where TEntity : class where TModels : class
-    {
-        Task<IEnumerable<TModels>> GetAllAsync();
-        Task<TModels> GetByIdAsync(int id);
-        Task AddAsync(TModels dto);
-        Task UpdateAsync(TModels dto);
-        Task DeleteAsync(int id);
-    }
+    Task<IEnumerable<TModel>> GetAllAsync();
+    Task<TModel> GetByIdAsync(int id);
+    Task AddAsync(TModel model);
+    Task UpdateAsync(TModel model);
+    Task DeleteAsync(int id);
 }

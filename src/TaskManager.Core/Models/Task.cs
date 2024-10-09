@@ -1,27 +1,25 @@
-﻿using TaskManager.Core.Enums;
+﻿using TaskStatus = TaskManager.Core.Enums.TaskStatus;
 
-namespace TaskManager.Core.Models
+namespace TaskManager.Core.Models;
+public class Task
 {
-    public class Task
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public Guid ProjectId { get; set; }
-        
-        public string Title { get; set; }
+    public Guid ProjectId { get; set; }
 
-        public string Description { get; set; }
+    public string Title { get; set; }
 
-        public ETaskStatus Status { get; set; }
+    public string Description { get; set; }
 
-        public Guid CreateEmployeeId { get; set; }
+    public TaskStatus Status { get; set; }
 
-        public Guid AssinedEmployeeId { get; set; }
+    public Guid CreateEmployeeId { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+    public Guid AssinedEmployeeId { get; set; }
 
-        public DateTime UpdatedDate { get; set; }
+    public DateTime CreatedDate { get; set; }
 
-        public byte Image { get; set; }
-    }
+    public DateTime UpdatedDate { get; set; }
+
+    public byte Image { get; set; }
 }
