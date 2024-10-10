@@ -4,7 +4,7 @@ using TaskManager.Infrastructure.Entities;
 
 namespace TaskManager.Infrastructure.EntityConfiguration;
 
-public class ProjectConfiguration : IEntityTypeConfiguration<Project>
+internal class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {

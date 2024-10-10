@@ -4,7 +4,7 @@ using TaskManager.Infrastructure.Entities;
 
 namespace TaskManager.Infrastructure.EntityConfiguration;
 
-public class CompanyConfiguration : IEntityTypeConfiguration<Company>
+internal class CompanyConfiguration : IEntityTypeConfiguration<Company>
 {
     public void Configure(EntityTypeBuilder<Company> builder)
     {

@@ -4,7 +4,7 @@ using Task = TaskManager.Infrastructure.Entities.Task;
 
 namespace TaskManager.Infrastructure.EntityConfiguration;
 
-public class TaskConfiguration : IEntityTypeConfiguration<Task>
+internal class TaskConfiguration : IEntityTypeConfiguration<Task>
 {
     public void Configure(EntityTypeBuilder<Task> builder)
     {

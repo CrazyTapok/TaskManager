@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);

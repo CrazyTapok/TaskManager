@@ -5,7 +5,7 @@ using Task = TaskManager.Infrastructure.Entities.Task;
 
 namespace TaskManager.Infrastructure.EF;
 
-public class DBContext : DbContext
+internal class DBContext : DbContext
 {
     public DbSet<Company> Companies { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
