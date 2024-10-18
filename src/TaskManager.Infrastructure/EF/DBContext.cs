@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using TaskManager.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
-using Task = TaskManager.Infrastructure.Entities.Task;
+using TaskManager.Core.Models;
+using Task = TaskManager.Core.Models.Task;
 
 namespace TaskManager.Infrastructure.EF;
 

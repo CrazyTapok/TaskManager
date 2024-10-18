@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Task = TaskManager.Infrastructure.Entities.Task;
+using Task = TaskManager.Core.Models.Task;
 
 namespace TaskManager.Infrastructure.EntityConfiguration;
 

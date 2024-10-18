@@ -13,6 +13,7 @@ public class Employee
     public string Password { get; set; }
 
     public Guid CompanyId { get; set; }
+    public Company Company { get; set; }
 
     public List<Project> Projects { get; set; }
 
