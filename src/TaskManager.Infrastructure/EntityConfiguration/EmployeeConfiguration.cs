@@ -4,7 +4,7 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Infrastructure.EntityConfiguration;
 
-internal class EmployeeConfigurayion : IEntityTypeConfiguration<Employee>
+internal class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 {
     public void Configure(EntityTypeBuilder<Employee> builder)
     {
