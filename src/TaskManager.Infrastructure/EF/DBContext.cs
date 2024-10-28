@@ -12,6 +12,8 @@ internal class DBContext : DbContext
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<Task> Tasks { get; set; } = null!;
 
+    public DBContext() { }
+
     public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {

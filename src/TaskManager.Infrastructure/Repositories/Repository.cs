@@ -1,14 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Interfaces;
-using TaskManager.Infrastructure.EF;
 
 namespace TaskManager.Infrastructure.Repositories;
 
 internal class Repository<TModel> : IRepository<TModel> where TModel : class
 {
-    protected readonly DBContext _context;
+    protected readonly DbContext _context;
     private readonly DbSet<TModel> _dbSet;
-    public Repository(DBContext context) 
+    public Repository(DbContext context) 
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _dbSet = _context.Set<TModel>();
