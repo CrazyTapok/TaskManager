@@ -20,4 +20,5 @@ public class Employee
     public List<Task> Tasks { get; set; }
 
     public Role Role { get; set; }
+    public bool IsDeleted { get; set; }
 }

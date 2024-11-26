@@ -88,6 +88,7 @@ public class RepositoryTests
         await _repository.DeleteAsync(entity.Id);
 
         var deletedEntity = await _context.Set<TestModel>().FindAsync(entity.Id);
-        Assert.Null(deletedEntity);
+        Assert.NotNull(deletedEntity);
+        Assert.True(deletedEntity.IsDeleted);
     }
 }

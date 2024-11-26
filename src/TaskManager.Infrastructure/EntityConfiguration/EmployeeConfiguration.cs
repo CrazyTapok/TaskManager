@@ -34,5 +34,9 @@ internal class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 
         builder.Property(t => t.Role)
             .IsRequired();
+
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

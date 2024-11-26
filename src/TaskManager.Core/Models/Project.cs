@@ -14,4 +14,5 @@ public class Project
     public List<Employee> Employees { get; set; }
 
     public List<Task> Tasks { get; set; }
+    public bool IsDeleted { get; set; }
 }

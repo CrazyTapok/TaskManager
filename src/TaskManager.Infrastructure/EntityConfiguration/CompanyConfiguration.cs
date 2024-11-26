@@ -21,5 +21,9 @@ internal class CompanyConfiguration : IEntityTypeConfiguration<Company>
         builder.HasMany(t => t.Employees)
             .WithOne(t => t.Company)
             .HasForeignKey(t => t.CompanyId);
+
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

@@ -42,8 +42,10 @@ internal class Repository<TModel> : IRepository<TModel> where TModel : class
         var entity = await _dbSet.FindAsync(id);
         if (entity != null)
         {
-            _dbSet.Remove(entity);
-            
+            typeof(TModel).GetProperty("IsDeleted").SetValue(entity, true);
+
+            _context.Entry(entity).State = EntityState.Modified;
+
             await _context.SaveChangesAsync();
         }
     }
