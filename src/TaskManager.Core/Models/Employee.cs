@@ -17,7 +17,11 @@ public class Employee
 
     public List<Project> Projects { get; set; }
 
-    public List<Task> Tasks { get; set; }
+    public List<Project> ManagerProjects { get; set; }
+
+    public List<Task> CreatedTasks { get; set; }
+
+    public List<Task> AssignedTasks { get; set; }
 
     public Role Role { get; set; }
     public bool IsDeleted { get; set; }

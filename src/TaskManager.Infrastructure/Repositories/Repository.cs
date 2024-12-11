@@ -1,48 +1,53 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Core.Interfaces;
+using TaskManager.Core.Interfaces.Data;
 
 namespace TaskManager.Infrastructure.Repositories;
 
 internal class Repository<TModel> : IRepository<TModel> where TModel : class
 {
     protected readonly DbContext _context;
-    private readonly DbSet<TModel> _dbSet;
-    public Repository(DbContext context) 
+    protected readonly DbSet<TModel> _dbSet;
+
+    public Repository(DbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _dbSet = _context.Set<TModel>();
     }
 
-    public Task<List<TModel>> GetAllAsync()
+    public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return _dbSet.ToListAsync();
+        return _dbSet.ToListAsync(cancellationToken);
     }
 
-    public Task<TModel> GetByIdAsync(Guid id)
+    public Task<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return _dbSet.FindAsync(id).AsTask();
+        return _dbSet.FindAsync(id, cancellationToken).AsTask();
     }
 
-    public async Task AddAsync(TModel model)
+    public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken)
     {
         await _dbSet.AddAsync(model);
-      
-        await _context.SaveChangesAsync();
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return model;
     }
 
-    public Task UpdateAsync(TModel model)
+    public async Task<bool> UpdateAsync(TModel model, CancellationToken cancellationToken)
     {
         _context.Entry(model).State = EntityState.Modified;
 
-        return _context.SaveChangesAsync();
+        var result = await _context.SaveChangesAsync(cancellationToken);
+
+        return result > 0;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var entity = await _dbSet.FindAsync(id);
+        var entity = await _dbSet.FindAsync(id, cancellationToken);
         if (entity != null)
         {
-            typeof(TModel).GetProperty("IsDeleted").SetValue(entity, true);
+            typeof(TModel).GetProperty("IsDeleted")?.SetValue(entity, true);
 
             _context.Entry(entity).State = EntityState.Modified;
 
