@@ -26,4 +26,6 @@ public class Task
     public DateTime UpdatedDate { get; set; }
 
     public byte Image { get; set; }
+
+    public bool IsDeleted { get; set; }
 }

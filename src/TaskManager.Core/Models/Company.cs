@@ -9,4 +9,6 @@ public class Company
     public List<Project> Projects { get; set; }
 
     public List<Employee> Employees { get; set; }
+
+    public bool IsDeleted { get; set; }
 }

@@ -16,10 +16,16 @@ internal class CompanyConfiguration : IEntityTypeConfiguration<Company>
 
         builder.HasMany(t => t.Projects)
             .WithOne(t => t.Company)
-            .HasForeignKey(t => t.CompanyId);
+            .HasForeignKey(t => t.CompanyId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(t => t.Employees)
             .WithOne(t => t.Company)
-            .HasForeignKey(t => t.CompanyId);
+            .HasForeignKey(t => t.CompanyId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

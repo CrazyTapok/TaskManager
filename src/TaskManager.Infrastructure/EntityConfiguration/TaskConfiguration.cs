@@ -25,5 +25,9 @@ internal class TaskConfiguration : IEntityTypeConfiguration<Task>
 
         builder.Property(t => t.UpdatedDate)
             .HasColumnType("datetime");
+
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

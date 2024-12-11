@@ -1,3 +1,4 @@
+using TaskManager.Core.Infrastructure;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContextInfrastructure(builder.Configuration);
+
+builder.Services.AddServiceModule();
 
 var app = builder.Build();
 

@@ -18,5 +18,9 @@ internal class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .WithOne(t => t.Project)
             .HasForeignKey(t => t.ProjectId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Property(t => t.IsDeleted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using TaskManager.Core.Interfaces;
 using TaskManager.Infrastructure.Repositories;
+using TaskManager.Core.Interfaces.Data;
 
 namespace TaskManager.Infrastructure.EF;
 
@@ -14,5 +14,10 @@ public static class StartupInfrastructure
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
     }
 }
