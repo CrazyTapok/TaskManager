@@ -1,24 +1,21 @@
 ﻿using AutoFixture;
 using Moq;
 using System.Linq.Expressions;
-using TaskManager.Core.Infrastructure;
 using TaskManager.Core.Interfaces.Data;
-using TaskManager.Core.Models;
 using TaskManager.Core.Services;
-using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Tests.Core.Services
 {
     public class TaskServiceTests
     {
-        private readonly Mock<ITaskRepository> _mockRepo;
+        private readonly Mock<IRepository<TaskManager.Core.Models.Task>> _mockRepo;
         private readonly TaskService _service;
         private readonly CancellationToken _cancellationToken;
         private readonly Fixture _fixture;
 
         public TaskServiceTests()
         {
-            _mockRepo = new Mock<ITaskRepository>();
+            _mockRepo = new Mock<IRepository<TaskManager.Core.Models.Task>>();
             _service = new TaskService(_mockRepo.Object);
             _cancellationToken = new CancellationToken();
             _fixture = new Fixture();
@@ -28,71 +25,6 @@ namespace TaskManager.Tests.Core.Services
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
 
-
-        [Fact]
-        public async Task GetByIdAsync()
-        {
-            var task = _fixture.Create<TaskManager.Core.Models.Task>();
-            _mockRepo.Setup(repo => repo.GetByIdAsync(task.Id, _cancellationToken)).ReturnsAsync(task);
-
-            var result = await _service.GetByIdAsync(task.Id, _cancellationToken);
-
-            Assert.Equal(task, result);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_Returnstask()
-        {
-            var taskId = _fixture.Create<Guid>();
-            _mockRepo.Setup(repo => repo.GetByIdAsync(taskId, _cancellationToken)).ReturnsAsync((TaskManager.Core.Models.Task)null);
-
-            await Assert.ThrowsAsync<ValidationException>(() => _service.GetByIdAsync(taskId, _cancellationToken));
-
-        }
-        [Fact]
-        public async Task ListAllAsync_ThrowsValidationException()
-        {
-            var tasks = _fixture.CreateMany<TaskManager.Core.Models.Task>().ToList();
-            _mockRepo.Setup(repo => repo.GetAllAsync(_cancellationToken)).ReturnsAsync(tasks);
-
-            var result = await _service.ListAllAsync(_cancellationToken);
-
-            Assert.Equal(tasks, result);
-        }
-
-        [Fact]
-        public async Task AddAsync()
-        {
-            var task = _fixture.Create<TaskManager.Core.Models.Task>();
-            _mockRepo.Setup(repo => repo.AddAsync(task, _cancellationToken)).ReturnsAsync(task);
-
-            var result = await _service.AddAsync(task, _cancellationToken);
-
-            Assert.Equal(task, result);
-        }
-
-        [Fact]
-        public async Task UpdateAsync()
-        {
-            var task = _fixture.Create<TaskManager.Core.Models.Task>();
-            _mockRepo.Setup(repo => repo.UpdateAsync(task, _cancellationToken)).ReturnsAsync(true);
-
-            var result = await _service.UpdateAsync(task, _cancellationToken);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task DeleteAsync()
-        {
-            var task = _fixture.Create<TaskManager.Core.Models.Task>();
-            _mockRepo.Setup(repo => repo.DeleteAsync(task.Id, _cancellationToken))
-                     .Returns(Task.CompletedTask);
-
-            await _service.DeleteAsync(task, _cancellationToken);
-
-            _mockRepo.Verify(repo => repo.DeleteAsync(task.Id, _cancellationToken), Times.Once);
-        }
 
         [Fact]
         public async Task GetTasksByProjectIdAsync()

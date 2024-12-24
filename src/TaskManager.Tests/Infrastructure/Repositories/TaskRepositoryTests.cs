@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using TaskManager.Core.Interfaces.Data;
 using TaskManager.Infrastructure.Repositories;
 using TaskManager.Tests.Infrastructure.EF;
 
@@ -11,7 +10,7 @@ public class TaskRepositoryTests
 {
     private readonly DbContextOptions<TestDBContext> _options;
     private readonly TestDBContext _context;
-    private readonly ITaskRepository _taskRepository;
+    private readonly TaskRepository _taskRepository;
     private readonly Fixture _fixture;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
 

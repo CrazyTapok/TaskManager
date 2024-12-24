@@ -1,5 +1,4 @@
-﻿using TaskManager.Core.Models;
-using Task = TaskManager.Core.Models.Task;
+﻿using Task = TaskManager.Core.Models.Task;
 
 namespace TaskManager.Core.Interfaces.Services;
 

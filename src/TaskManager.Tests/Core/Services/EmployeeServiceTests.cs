@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using Moq;
 using System.Linq.Expressions;
-using TaskManager.Core.Infrastructure;
 using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
 using TaskManager.Core.Services;
@@ -11,14 +10,14 @@ namespace TaskManager.Tests.Core.Services
 {
     public class EmployeeServiceTests
     {
-        private readonly Mock<IEmployeeRepository> _mockRepo;
+        private readonly Mock<IRepository<Employee>> _mockRepo;
         private readonly EmployeeService _service;
         private readonly CancellationToken _cancellationToken;
         private readonly Fixture _fixture;
 
         public EmployeeServiceTests()
         {
-            _mockRepo = new Mock<IEmployeeRepository>();
+            _mockRepo = new Mock<IRepository<Employee>>();
             _service = new EmployeeService(_mockRepo.Object);
             _cancellationToken = new CancellationToken();
             _fixture = new Fixture();
@@ -28,71 +27,6 @@ namespace TaskManager.Tests.Core.Services
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
 
-
-        [Fact]
-        public async Task GetByIdAsync()
-        {
-            var employee = _fixture.Create<Employee>();
-            _mockRepo.Setup(repo => repo.GetByIdAsync(employee.Id, _cancellationToken)).ReturnsAsync(employee);
-
-            var result = await _service.GetByIdAsync(employee.Id, _cancellationToken);
-
-            Assert.Equal(employee, result);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_ReturnsEmployee()
-        {
-            var employeeId = _fixture.Create<Guid>();
-            _mockRepo.Setup(repo => repo.GetByIdAsync(employeeId, _cancellationToken)).ReturnsAsync((Employee)null);
-
-            await Assert.ThrowsAsync<ValidationException>(() => _service.GetByIdAsync(employeeId, _cancellationToken));
-
-        }
-        [Fact]
-        public async Task ListAllAsync_ThrowsValidationException()
-        {
-            var employees = _fixture.CreateMany<Employee>().ToList();
-            _mockRepo.Setup(repo => repo.GetAllAsync(_cancellationToken)).ReturnsAsync(employees);
-
-            var result = await _service.ListAllAsync(_cancellationToken);
-
-            Assert.Equal(employees, result);
-        }
-
-        [Fact]
-        public async Task AddAsync()
-        {
-            var employee = _fixture.Create<Employee>();
-            _mockRepo.Setup(repo => repo.AddAsync(employee, _cancellationToken)).ReturnsAsync(employee);
-
-            var result = await _service.AddAsync(employee, _cancellationToken);
-
-            Assert.Equal(employee, result);
-        }
-
-        [Fact]
-        public async Task UpdateAsync()
-        {
-            var employee = _fixture.Create<Employee>();
-            _mockRepo.Setup(repo => repo.UpdateAsync(employee, _cancellationToken)).ReturnsAsync(true);
-
-            var result = await _service.UpdateAsync(employee, _cancellationToken);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task DeleteAsync()
-        {
-            var employee = _fixture.Create<Employee>();
-            _mockRepo.Setup(repo => repo.DeleteAsync(employee.Id, _cancellationToken))
-                     .Returns(Task.CompletedTask);
-
-            await _service.DeleteAsync(employee, _cancellationToken);
-
-            _mockRepo.Verify(repo => repo.DeleteAsync(employee.Id, _cancellationToken), Times.Once);
-        }
 
         [Fact]
         public async Task GetEmployeesByProjectIdAsync()

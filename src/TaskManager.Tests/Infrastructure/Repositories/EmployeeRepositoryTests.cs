@@ -13,7 +13,7 @@ public class EmployeeRepositoryTests
 {
     private readonly DbContextOptions<TestDBContext> _options;
     private readonly TestDBContext _context;
-    private readonly IEmployeeRepository _employeeRepository;
+    private readonly EmployeeRepository _employeeRepository;
     private readonly Fixture _fixture;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
