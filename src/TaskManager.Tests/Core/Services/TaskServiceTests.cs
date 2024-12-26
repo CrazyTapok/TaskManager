@@ -55,8 +55,8 @@ namespace TaskManager.Tests.Core.Services
             var employeeId = Guid.NewGuid();
             var tasks = new List<TaskManager.Core.Models.Task>
             {
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task1", AssinedEmployeeId = employeeId },
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task2", AssinedEmployeeId = Guid.NewGuid() },
+                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task1", AssignedEmployeeId = employeeId },
+                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task2", AssignedEmployeeId = Guid.NewGuid() },
                 new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task3", CreateEmployeeId = employeeId }
             };
 

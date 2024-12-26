@@ -1,10 +1,10 @@
 ﻿namespace TaskManager.Core.Interfaces.Services;
 
-public interface IService<T>
+public interface IService<TModel>
 {
-    Task<T> GetByIdAsync(Guid id, CancellationToken? cancellationToken);
-    Task<List<T>> ListAllAsync(CancellationToken? cancellationToken);
-    Task<T> AddAsync(T entity, CancellationToken? cancellationToken);
-    Task<bool> UpdateAsync(T entity, CancellationToken? cancellationToken);
-    Task DeleteAsync(Guid id, CancellationToken? cancellationToken);
+    Task<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<List<TModel>> ListAllAsync(CancellationToken cancellationToken);
+    Task<TModel> AddAsync(TModel entity, CancellationToken cancellationToken);
+    Task<bool> UpdateAsync(TModel entity, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
 }

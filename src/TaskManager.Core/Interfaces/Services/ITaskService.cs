@@ -6,5 +6,5 @@ internal interface ITaskService : IService<Task>
 {
     Task<List<Task>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken);
 
-    Task<List<Task>> GetTasksByEmployeeIdAsync(Guid emploeeId, CancellationToken cancellationToken);
+    Task<List<Task>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken);
 }

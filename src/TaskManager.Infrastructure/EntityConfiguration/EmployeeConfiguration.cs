@@ -35,8 +35,8 @@ internal class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(t => t.AssignedTasks)
-           .WithOne(t => t.AssinedEmployee)
-           .HasForeignKey(t => t.AssinedEmployeeId)
+           .WithOne(t => t.AssignedEmployee)
+           .HasForeignKey(t => t.AssignedEmployeeId)
            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(t => t.ManagerProjects)

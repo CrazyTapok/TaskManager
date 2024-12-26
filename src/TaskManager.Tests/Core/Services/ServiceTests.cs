@@ -28,7 +28,7 @@ public class ServiceTests
     {
         var employee = _fixture.Create<TestModel>();
         _repositoryMock.Setup(r => r.GetByIdAsync(employee.Id, _cancellationToken))
-            .ReturnsAsync(employee);
+            .Returns(new ValueTask<TestModel>(employee));
 
         var result = await _service.GetByIdAsync(employee.Id, _cancellationToken);
 
@@ -38,10 +38,10 @@ public class ServiceTests
     [Fact]
     public async Task GetByIdAsync_ThrowsNotFoundException_WhenEntityDoesNotExist()
     {
-        var id = Guid.NewGuid();
+        var id = Guid.NewGuid(); 
+        
         _repositoryMock.Setup(r => r.GetByIdAsync(id, _cancellationToken))
-            .ReturnsAsync((TestModel)null);
-
+            .Returns(new ValueTask<TestModel>((TestModel)null)); 
         await Assert.ThrowsAsync<NotFoundException>(() => _service.GetByIdAsync(id, _cancellationToken));
     }
 

@@ -4,27 +4,19 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-public class EmployeeService : Service<Employee>, IEmployeeService 
+public class EmployeeService(IRepository<Employee> employeeRepository) : Service<Employee>(employeeRepository), IEmployeeService 
 {
-    private readonly IRepository<Employee> _employeeRepository; 
-    
-    public EmployeeService(IRepository<Employee> employeeRepository) : base(employeeRepository) 
-    { 
-        _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository)); 
-    }
+    private readonly IRepository<Employee> _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
 
 
-    public async Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken? cancellationToken) 
-    { 
-        var employees = await _employeeRepository.FindAsync(t => t.Projects.Any(t => t.Id == projectId), cancellationToken); 
-        
-        return employees.ToList(); 
-    }
-
-    public async Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken? cancellationToken)
+    public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken) 
     {
-        var employees = await _employeeRepository.FindAsync(t => t.CompanyId == companyId, cancellationToken);
+        return _employeeRepository.FindAsync(t => t.Projects.Any(t => t.Id == projectId), cancellationToken); 
+        
+    }
 
-        return employees.ToList();
+    public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken)
+    {
+        return _employeeRepository.FindAsync(t => t.CompanyId == companyId, cancellationToken);
     }
 }

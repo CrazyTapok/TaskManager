@@ -1,8 +1,8 @@
 ﻿using AutoFixture;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.EF;
 using TaskManager.Infrastructure.Repositories;
 using TaskManager.Tests.Infrastructure.EF;
 using Task = System.Threading.Tasks.Task;
@@ -11,7 +11,7 @@ namespace TaskManager.Tests.Infrastructure.Repositories;
 
 public class ProjectRepositoryTests
 {
-    private readonly DbContextOptions<TestDBContext> _options;
+    private readonly DbContextOptions<DBContext> _options;
     private readonly TestDBContext _context;
     private readonly ProjectRepository _projectRepository;
     private readonly Fixture _fixture;
@@ -19,7 +19,7 @@ public class ProjectRepositoryTests
 
     public ProjectRepositoryTests()
     {
-        _options = new DbContextOptionsBuilder<TestDBContext>()
+        _options = new DbContextOptionsBuilder<DBContext>()
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
         _context = new TestDBContext(_options);

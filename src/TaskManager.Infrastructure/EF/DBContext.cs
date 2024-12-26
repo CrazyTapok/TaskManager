@@ -15,13 +15,18 @@ internal class DBContext : DbContext
     public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {
-        Database.EnsureDeleted();
-        Database.EnsureCreated();
+        //Database.EnsureDeleted();
+        //Database.EnsureCreated();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(DBContext)));
+        var assembly = Assembly.GetAssembly(typeof(DBContext)); 
+        
+        if (assembly != null) 
+        { 
+            modelBuilder.ApplyConfigurationsFromAssembly(assembly); 
+        }
 
         base.OnModelCreating(modelBuilder);
     }

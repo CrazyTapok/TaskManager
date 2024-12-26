@@ -5,18 +5,11 @@ using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Core.Services;
 
-public class Service<TModel> : IService<TModel> where TModel : class
+public class Service<TModel>(IRepository<TModel> repository) : IService<TModel> where TModel : class
 {
-    private readonly IRepository<TModel> _repository;
-
-    public Service(IRepository<TModel> repository)
+    public async Task<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    }
-
-    public async Task<TModel> GetByIdAsync(Guid id, CancellationToken? cancellationToken)
-    {
-        var entity = await _repository.GetByIdAsync(id, cancellationToken);
+        var entity = await repository.GetByIdAsync(id, cancellationToken);
 
         if (entity == null)
             throw new NotFoundException($"Entity with id {id} not found", "");
@@ -24,22 +17,22 @@ public class Service<TModel> : IService<TModel> where TModel : class
         return entity;
     }
 
-    public Task<List<TModel>> ListAllAsync(CancellationToken? cancellationToken)
+    public Task<List<TModel>> ListAllAsync(CancellationToken cancellationToken)
     {
-        return _repository.GetAllAsync(cancellationToken);
+        return repository.GetAllAsync(cancellationToken);
     }
 
-    public Task<TModel> AddAsync(TModel entity, CancellationToken? cancellationToken)
+    public Task<TModel> AddAsync(TModel entity, CancellationToken cancellationToken)
     {
-        return _repository.AddAsync(entity, cancellationToken);
+        return repository.AddAsync(entity, cancellationToken);
     }
 
-    public Task<bool> UpdateAsync(TModel entity, CancellationToken? cancellationToken)
+    public Task<bool> UpdateAsync(TModel entity, CancellationToken cancellationToken)
     {
-        return _repository.UpdateAsync(entity, cancellationToken);
+        return repository.UpdateAsync(entity, cancellationToken);
     }
-    public Task DeleteAsync(Guid id, CancellationToken? cancellationToken)
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        return _repository.DeleteAsync(id, cancellationToken);
+        return repository.DeleteAsync(id, cancellationToken);
     }
 }

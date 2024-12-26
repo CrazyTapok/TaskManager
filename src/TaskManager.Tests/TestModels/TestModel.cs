@@ -1,10 +1,8 @@
-﻿namespace TaskManager.Tests.TestModels;
+﻿using TaskManager.Core.Models;
 
-public class TestModel
+namespace TaskManager.Tests.TestModels;
+
+public class TestModel : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public string Title { get; set; }
-
-    public bool IsDeleted { get; set; }
 }

@@ -3,6 +3,6 @@
 public enum Role
 {
     Developer,
-    ProjectManeger,
+    ProjectManager,
     Admin
 }

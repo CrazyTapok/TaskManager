@@ -5,14 +5,14 @@ using TaskManager.Core.Services;
 
 namespace TaskManager.Core.Infrastructure;
 
-public static class ServiceCollection
+public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddServiceModule(this IServiceCollection services)
     {
-        services.AddTransient<IEmployeeService, EmployeeService>(); 
-        services.AddTransient<IProjectService, ProjectService>();
-        services.AddTransient<ITaskService, TaskService>();
-        services.AddTransient(typeof(IService<Company>), typeof(Service<Company>)); 
+        services.AddScoped<IEmployeeService, EmployeeService>(); 
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<IService<Company>, Service<Company>>(); 
 
         return services;
     }
