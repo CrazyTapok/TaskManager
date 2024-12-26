@@ -4,10 +4,14 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-public class ProjectService(IRepository<Project> projectRepository) : Service<Project>(projectRepository), IProjectService
+public class ProjectService : Service<Project>, IProjectService
 {
-    private readonly IRepository<Project> _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
+    private readonly IRepository<Project> _projectRepository;
 
+    public ProjectService(IRepository<Project> projectRepository) : base(projectRepository)
+    {
+        _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
+    }
 
     public Task<List<Project>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken)
     {

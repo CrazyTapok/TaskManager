@@ -4,10 +4,14 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-public class EmployeeService(IRepository<Employee> employeeRepository) : Service<Employee>(employeeRepository), IEmployeeService 
+public class EmployeeService : Service<Employee>, IEmployeeService 
 {
-    private readonly IRepository<Employee> _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+    private readonly IRepository<Employee> _employeeRepository;
 
+    public EmployeeService(IRepository<Employee> employeeRepository) : base(employeeRepository)
+    {
+        _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+    }
 
     public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken) 
     {
