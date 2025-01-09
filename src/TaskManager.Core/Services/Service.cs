@@ -12,7 +12,7 @@ internal class Service<TModel>(IRepository<TModel> repository) : IService<TModel
         var entity = await repository.GetByIdAsync(id, cancellationToken);
 
         if (entity == null)
-            throw new NotFoundException($"Entity with id {id} not found", "");
+            throw new NotFoundException($"Entity with id {id} not found");
 
         return entity;
     }

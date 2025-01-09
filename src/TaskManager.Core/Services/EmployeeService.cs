@@ -16,7 +16,6 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
     public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default) 
     {
         return _employeeRepository.FindAsync(employee => employee.Projects.Any(project => project.Id == projectId), cancellationToken); 
-        
     }
 
     public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
