@@ -12,26 +12,26 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
     protected readonly DbSet<TModel> _dbSet = context.Set<TModel>();
 
 
-    public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken)
+    public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return _dbSet.ToListAsync(cancellationToken);
     }
      
-    public ValueTask<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public ValueTask<TModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return _dbSet.FindAsync(id, cancellationToken);
     }
 
-    public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken)
+    public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken = default)
     {
-        await _dbSet.AddAsync(model);
+        await _dbSet.AddAsync(model, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
 
         return model;
     }
 
-    public async Task<bool> UpdateAsync(TModel model, CancellationToken cancellationToken)
+    public async Task<bool> UpdateAsync(TModel model, CancellationToken cancellationToken = default)
     {
         context.Entry(model).State = EntityState.Modified;
 
@@ -40,7 +40,7 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
         return result > 0;
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = await _dbSet.FindAsync(id, cancellationToken); 
         
@@ -49,11 +49,11 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
             entity.IsDeleted = true;
 
             context.Entry(entity).State = EntityState.Modified; 
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync(cancellationToken); 
         }
     }
 
-    public Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken)
+    public Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return _dbSet.Where(predicate).ToListAsync(cancellationToken);
     }

@@ -4,7 +4,7 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-public class EmployeeService : Service<Employee>, IEmployeeService 
+internal class EmployeeService : Service<Employee>, IEmployeeService 
 {
     private readonly IRepository<Employee> _employeeRepository;
 
@@ -13,14 +13,14 @@ public class EmployeeService : Service<Employee>, IEmployeeService
         _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
     }
 
-    public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken) 
+    public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default) 
     {
-        return _employeeRepository.FindAsync(t => t.Projects.Any(t => t.Id == projectId), cancellationToken); 
+        return _employeeRepository.FindAsync(employee => employee.Projects.Any(project => project.Id == projectId), cancellationToken); 
         
     }
 
-    public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken)
+    public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
-        return _employeeRepository.FindAsync(t => t.CompanyId == companyId, cancellationToken);
+        return _employeeRepository.FindAsync(employee => employee.CompanyId == companyId, cancellationToken);
     }
 }

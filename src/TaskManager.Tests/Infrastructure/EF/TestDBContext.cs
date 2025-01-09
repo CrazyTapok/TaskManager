@@ -26,5 +26,6 @@ internal class TestDBContext : DBContext
             modelBuilder.ApplyConfigurationsFromAssembly(assembly); 
         } 
         
-        base.OnModelCreating(modelBuilder); }
+        base.OnModelCreating(modelBuilder); 
+    }
 }

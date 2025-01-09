@@ -23,7 +23,7 @@ namespace TaskManager.Tests.Core.Services
             _fixture = new Fixture();
 
             _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-                .ForEach(b => _fixture.Behaviors.Remove(b));
+                .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
 
@@ -31,23 +31,24 @@ namespace TaskManager.Tests.Core.Services
         [Fact]
         public async Task GetProjectsByEmployeeIdAsync()
         {
+            // Arrange
+            var expectedCount = 2;
             var employeeId = Guid.NewGuid();
             var projects = new List<Project>
             {
-                new Project { Id = Guid.NewGuid(), Employees = new List<Employee> { new Employee { Id = employeeId } } },
-                new Project { Id = Guid.NewGuid(), Employees = new List<Employee> { new Employee { Id = employeeId } } },
-                new Project { Id = Guid.NewGuid(), Employees = new List<Employee> { new Employee { Id = Guid.NewGuid() } } }
+                _fixture.Build<Project>().With(project => project.Employees, [_fixture.Build<Employee>().With(employee => employee.Id, employeeId).Create()]).Create(),
+                _fixture.Build<Project>().With(project => project.Employees, [_fixture.Build<Employee>().With(employee => employee.Id, employeeId).Create()]).Create(),
+                _fixture.Build<Project>().With(project => project.Employees, [_fixture.Build<Employee>().With(employee => employee.Id, Guid.NewGuid).Create()]).Create()
             };
 
             _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Project, bool>>>(), _cancellationToken))
-                .ReturnsAsync((Expression<Func<Project, bool>> predicate, CancellationToken token) =>
-                {
-                    return projects.Where(predicate.Compile()).ToList();
-                });
+                .ReturnsAsync((Expression<Func<Project, bool>> predicate, CancellationToken token) => projects.Where(predicate.Compile()).ToList());
 
+            // Act
             var result = await _service.GetProjectsByEmployeeIdAsync(employeeId, _cancellationToken);
 
-            Assert.Equal(2, result.Count);
+            // Assert
+            Assert.Equal(expectedCount, result.Count);
             Assert.All(result, project => Assert.Contains(project, projects));
         }
     }

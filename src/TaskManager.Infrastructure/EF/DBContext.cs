@@ -15,18 +15,21 @@ internal class DBContext : DbContext
     public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {
-        //Database.EnsureDeleted();
-        //Database.EnsureCreated();
+        if (Database.IsRelational())
+        {
+            if (Database.GetPendingMigrations().Any())
+                Database.Migrate();
+            else if (!Database.CanConnect())
+                Database.EnsureCreated();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var assembly = Assembly.GetAssembly(typeof(DBContext)); 
-        
-        if (assembly != null) 
-        { 
-            modelBuilder.ApplyConfigurationsFromAssembly(assembly); 
-        }
+        var assembly = Assembly.GetAssembly(typeof(DBContext));
+
+        if (assembly != null)
+            modelBuilder.ApplyConfigurationsFromAssembly(assembly);
 
         base.OnModelCreating(modelBuilder);
     }

@@ -21,7 +21,7 @@ namespace TaskManager.Tests.Core.Services
             _fixture = new Fixture();
 
             _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-                .ForEach(b => _fixture.Behaviors.Remove(b));
+                .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
 
@@ -29,22 +29,22 @@ namespace TaskManager.Tests.Core.Services
         [Fact]
         public async Task GetTasksByProjectIdAsync()
         {
+            // Arrange
             var projectId = Guid.NewGuid();
             var tasks = new List<TaskManager.Core.Models.Task>
             {
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task1", ProjectId = projectId },
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task2", ProjectId = projectId },
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task3", ProjectId = projectId }
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.ProjectId, projectId).Create(),
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.ProjectId, projectId).Create(),
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.ProjectId, projectId).Create()
             };
 
             _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<TaskManager.Core.Models.Task, bool>>>(), _cancellationToken))
-               .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) =>
-               {
-                   return tasks.Where(predicate.Compile()).ToList();
-               });
+               .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => tasks.Where(predicate.Compile()).ToList());
 
+            // Act
             var result = await _service.GetTasksByProjectIdAsync(projectId, _cancellationToken);
 
+            // Assert
             Assert.Equal(tasks.Count, result.Count);
             Assert.All(result, task => Assert.Contains(task, tasks));
         }
@@ -52,23 +52,24 @@ namespace TaskManager.Tests.Core.Services
         [Fact]
         public async Task GetTasksByEmployeeIdAsync()
         {
+            // Arrange
+            var expectedCount = 2;
             var employeeId = Guid.NewGuid();
             var tasks = new List<TaskManager.Core.Models.Task>
             {
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task1", AssignedEmployeeId = employeeId },
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task2", AssignedEmployeeId = Guid.NewGuid() },
-                new TaskManager.Core.Models.Task { Id = Guid.NewGuid(), Title = "Task3", CreateEmployeeId = employeeId }
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.AssignedEmployeeId, employeeId).Create(),
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.AssignedEmployeeId, Guid.NewGuid()).Create(),
+                _fixture.Build<TaskManager.Core.Models.Task>().With(task => task.CreateEmployeeId, employeeId).Create()
             };
 
             _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<TaskManager.Core.Models.Task, bool>>>(), _cancellationToken))
-                 .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) =>
-                 {
-                     return tasks.Where(predicate.Compile()).ToList();
-                 });
+                 .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => tasks.Where(predicate.Compile()).ToList());
 
+            // Act
             var result = await _service.GetTasksByEmployeeIdAsync(employeeId, _cancellationToken);
 
-            Assert.Equal(2, result.Count);
+            // Assert
+            Assert.Equal(expectedCount, result.Count);
             Assert.All(result, task => Assert.Contains(task, tasks));
         }
     }

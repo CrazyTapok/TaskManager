@@ -26,7 +26,7 @@ public class EmployeeRepositoryTests
         _fixture = new Fixture();
 
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+            .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _employeeRepository = new EmployeeRepository(_context);
@@ -35,16 +35,20 @@ public class EmployeeRepositoryTests
     [Fact]
     public async Task FindAsync_ReturnsMatchingEmployees()
     {
+        // Arrange
+        var employeeName = "BestEmployee";
         var employees = _fixture.CreateMany<Employee>().ToList();
         await _context.Set<Employee>().AddRangeAsync(employees);
         await _context.SaveChangesAsync();
 
-        Expression<Func<Employee, bool>> predicate = t => t.Name.Contains("BestEmployee");
+        Expression<Func<Employee, bool>> predicate = employee => employee.Name.Contains(employeeName);
         var matchingEmployees = employees.Where(predicate.Compile()).ToList();
 
+        // Act
         var result = await _employeeRepository.FindAsync(predicate, _cancellationToken);
 
-        Assert.Equal(matchingEmployees.Count, result.Count());
-        Assert.All(result, employee => Assert.Contains("BestEmployee", employee.Name));
+        // Assert
+        Assert.Equal(matchingEmployees.Count, result.Count);
+        Assert.All(result, employee => Assert.Contains(employeeName, employee.Name));
     }
 }

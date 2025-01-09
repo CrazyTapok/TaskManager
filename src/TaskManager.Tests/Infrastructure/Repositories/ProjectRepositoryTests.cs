@@ -26,7 +26,7 @@ public class ProjectRepositoryTests
         _fixture = new Fixture();
 
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+            .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _projectRepository = new ProjectRepository(_context);
@@ -35,16 +35,20 @@ public class ProjectRepositoryTests
     [Fact]
     public async Task FindAsync_ReturnsMatchingProjects()
     {
+        // Arrange
+        var projectTitle = "BestProject";
         var projects = _fixture.CreateMany<Project>().ToList();
         await _context.Set<Project>().AddRangeAsync(projects);
         await _context.SaveChangesAsync();
 
-        Expression<Func<Project, bool>> predicate = p => p.Title.Contains("BestProject");
+        Expression<Func<Project, bool>> predicate = project => project.Title.Contains(projectTitle);
         var matchingProjects = projects.Where(predicate.Compile()).ToList();
 
+        // Act
         var result = await _projectRepository.FindAsync(predicate, _cancellationToken);
 
-        Assert.Equal(matchingProjects.Count, result.Count());
-        Assert.All(result, project => Assert.Contains("BestProject", project.Title));
+        // Assert
+        Assert.Equal(matchingProjects.Count, result.Count);
+        Assert.All(result, project => Assert.Contains(projectTitle, project.Title));
     }
 }

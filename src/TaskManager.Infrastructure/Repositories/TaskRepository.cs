@@ -7,11 +7,11 @@ namespace TaskManager.Infrastructure.Repositories;
 
 internal class TaskRepository(DBContext context) : Repository<Task>(context)
 {
-    public new Task<List<Task>> FindAsync(Expression<Func<Task, bool>> predicate, CancellationToken cancellationToken)
+    public new Task<List<Task>> FindAsync(Expression<Func<Task, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return _dbSet.Where(predicate)
-            .Include(t => t.AssignedEmployee)
-            .Include(t => t.CreateEmployee)
+            .Include(task => task.AssignedEmployee)
+            .Include(task => task.CreateEmployee)
             .ToListAsync(cancellationToken);
     }
 }

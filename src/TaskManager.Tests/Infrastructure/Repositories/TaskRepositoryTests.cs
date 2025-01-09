@@ -24,7 +24,7 @@ public class TaskRepositoryTests
         _fixture = new Fixture();
 
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+            .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _taskRepository = new TaskRepository(_context);
@@ -33,17 +33,20 @@ public class TaskRepositoryTests
     [Fact]
     public async Task FindAsync_ReturnsMatchingTasks()
     {
+        // Arrange
+        var taskTitle = "BestTask";
         var tasks = _fixture.CreateMany<TaskManager.Core.Models.Task>().ToList();
         await _context.Set<TaskManager.Core.Models.Task>().AddRangeAsync(tasks);
         await _context.SaveChangesAsync();
 
-        Expression<Func<TaskManager.Core.Models.Task, bool>> predicate = t => t.Title.Contains("BestTask");
+        Expression<Func<TaskManager.Core.Models.Task, bool>> predicate = task => task.Title.Contains(taskTitle);
         var matchingTasks = tasks.Where(predicate.Compile()).ToList();
 
+        // Act
         var result = await _taskRepository.FindAsync(predicate, _cancellationToken);
 
-        Assert.Equal(matchingTasks.Count, result.Count());
-        Assert.All(result, task => Assert.Contains("BestTask", task.Title));
+        // Assert
+        Assert.Equal(matchingTasks.Count, result.Count);
+        Assert.All(result, task => Assert.Contains(taskTitle, task.Title));
     }
-
 }
