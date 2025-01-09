@@ -12,18 +12,24 @@ internal class DBContext : DbContext
     public DbSet<Project> Projects { get; set; } = null!;
     public DbSet<Task> Tasks { get; set; } = null!;
 
-    public DBContext() { }
-
     public DBContext(DbContextOptions<DBContext> options)
         : base(options)
     {
-        Database.EnsureDeleted();
-        Database.EnsureCreated();
+        if (Database.IsRelational())
+        {
+            if (Database.GetPendingMigrations().Any())
+                Database.Migrate();
+            else if (!Database.CanConnect())
+                Database.EnsureCreated();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(DBContext)));
+        var assembly = Assembly.GetAssembly(typeof(DBContext));
+
+        if (assembly != null)
+            modelBuilder.ApplyConfigurationsFromAssembly(assembly);
 
         base.OnModelCreating(modelBuilder);
     }

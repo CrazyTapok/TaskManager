@@ -2,10 +2,8 @@
 
 namespace TaskManager.Core.Models;
 
-public class Employee
+public class Employee : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public string Name { get; set; }
 
     public string Email { get; set; }
@@ -17,7 +15,11 @@ public class Employee
 
     public List<Project> Projects { get; set; }
 
-    public List<Task> Tasks { get; set; }
+    public List<Project> ManagerProjects { get; set; }
+
+    public List<Task> CreatedTasks { get; set; }
+
+    public List<Task> AssignedTasks { get; set; }
 
     public Role Role { get; set; }
 }

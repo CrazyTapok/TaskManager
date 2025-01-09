@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManager.Infrastructure.EF;
 
@@ -11,9 +12,11 @@ using TaskManager.Infrastructure.EF;
 namespace TaskManager.Infrastructure.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20241126175820_AddIdDeletedProperty")]
+    partial class AddIdDeletedProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,8 +125,6 @@ namespace TaskManager.Infrastructure.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.HasIndex("ManagerId");
-
                     b.ToTable("Projects", (string)null);
                 });
 
@@ -133,7 +134,7 @@ namespace TaskManager.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AssignedEmployeeId")
+                    b.Property<Guid>("AssinedEmployeeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CreateEmployeeId")
@@ -171,7 +172,7 @@ namespace TaskManager.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedEmployeeId");
+                    b.HasIndex("AssinedEmployeeId");
 
                     b.HasIndex("CreateEmployeeId");
 
@@ -200,7 +201,7 @@ namespace TaskManager.Infrastructure.Migrations
                     b.HasOne("TaskManager.Core.Models.Company", "Company")
                         .WithMany("Employees")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -211,30 +212,22 @@ namespace TaskManager.Infrastructure.Migrations
                     b.HasOne("TaskManager.Core.Models.Company", "Company")
                         .WithMany("Projects")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("TaskManager.Core.Models.Employee", "Manager")
-                        .WithMany("ManagerProjects")
-                        .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
-
-                    b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("TaskManager.Core.Models.Task", b =>
                 {
-                    b.HasOne("TaskManager.Core.Models.Employee", "AssignedEmployee")
-                        .WithMany("AssignedTasks")
-                        .HasForeignKey("AssignedEmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.HasOne("TaskManager.Core.Models.Employee", "AssinedEmployee")
+                        .WithMany()
+                        .HasForeignKey("AssinedEmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TaskManager.Core.Models.Employee", "CreateEmployee")
-                        .WithMany("CreatedTasks")
+                        .WithMany("Tasks")
                         .HasForeignKey("CreateEmployeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -245,7 +238,7 @@ namespace TaskManager.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("AssignedEmployee");
+                    b.Navigation("AssinedEmployee");
 
                     b.Navigation("CreateEmployee");
 
@@ -261,11 +254,7 @@ namespace TaskManager.Infrastructure.Migrations
 
             modelBuilder.Entity("TaskManager.Core.Models.Employee", b =>
                 {
-                    b.Navigation("AssignedTasks");
-
-                    b.Navigation("CreatedTasks");
-
-                    b.Navigation("ManagerProjects");
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("TaskManager.Core.Models.Project", b =>

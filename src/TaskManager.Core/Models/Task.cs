@@ -2,10 +2,8 @@
 
 namespace TaskManager.Core.Models;
 
-public class Task
+public class Task : BaseEntity
 {
-    public Guid Id { get; set; }
-
     public Guid ProjectId { get; set; }
     public Project Project { get; set; }
 
@@ -18,8 +16,8 @@ public class Task
     public Guid CreateEmployeeId { get; set; }
     public Employee CreateEmployee { get; set; }
 
-    public Guid AssinedEmployeeId { get; set; }
-    public Employee AssinedEmployee { get; set; }
+    public Guid AssignedEmployeeId { get; set; }
+    public Employee AssignedEmployee { get; set; }
 
     public DateTime CreatedDate { get; set; }
 

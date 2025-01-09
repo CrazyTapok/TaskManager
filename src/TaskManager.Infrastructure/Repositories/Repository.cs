@@ -1,50 +1,60 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Core.Interfaces;
+using System.Linq.Expressions;
+using TaskManager.Core.Interfaces.Data;
+using TaskManager.Core.Models;
+using TaskManager.Infrastructure.EF;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Infrastructure.Repositories;
 
-internal class Repository<TModel> : IRepository<TModel> where TModel : class
+internal class Repository<TModel>(DBContext context) : IRepository<TModel> where TModel : BaseEntity
 {
-    protected readonly DbContext _context;
-    private readonly DbSet<TModel> _dbSet;
-    public Repository(DbContext context) 
+    protected readonly DbSet<TModel> _dbSet = context.Set<TModel>();
+
+
+    public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _dbSet = _context.Set<TModel>();
+        return _dbSet.ToListAsync(cancellationToken);
+    }
+     
+    public ValueTask<TModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbSet.FindAsync(id, cancellationToken);
     }
 
-    public Task<List<TModel>> GetAllAsync()
+    public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken = default)
     {
-        return _dbSet.ToListAsync();
+        await _dbSet.AddAsync(model, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return model;
     }
 
-    public Task<TModel> GetByIdAsync(Guid id)
+    public async Task<bool> UpdateAsync(TModel model, CancellationToken cancellationToken = default)
     {
-        return _dbSet.FindAsync(id).AsTask();
+        context.Entry(model).State = EntityState.Modified;
+
+        var result = await context.SaveChangesAsync(cancellationToken);
+
+        return result > 0;
     }
 
-    public async Task AddAsync(TModel model)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await _dbSet.AddAsync(model);
-      
-        await _context.SaveChangesAsync();
-    }
+        var entity = await _dbSet.FindAsync(id, cancellationToken); 
+        
+        if (entity != null) 
+        { 
+            entity.IsDeleted = true;
 
-    public Task UpdateAsync(TModel model)
-    {
-        _context.Entry(model).State = EntityState.Modified;
-
-        return _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Guid id)
-    {
-        var entity = await _dbSet.FindAsync(id);
-        if (entity != null)
-        {
-            _dbSet.Remove(entity);
-            
-            await _context.SaveChangesAsync();
+            context.Entry(entity).State = EntityState.Modified; 
+            await context.SaveChangesAsync(cancellationToken); 
         }
+    }
+
+    public Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return _dbSet.Where(predicate).ToListAsync(cancellationToken);
     }
 }
