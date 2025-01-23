@@ -11,7 +11,16 @@ services:
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=TaskManager_db;Trusted_Connection=True;
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManager_db;Integrated Security=True;
+
+  db:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - db_data:/var/opt/mssql
 
 volumes:
   db_data:
