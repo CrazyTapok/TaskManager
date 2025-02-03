@@ -19,5 +19,8 @@ public static class StartupInfrastructure
         services.AddScoped<IRepository<Employee>, EmployeeRepository>(); 
         services.AddScoped<IRepository<Project>, ProjectRepository>(); 
         services.AddScoped<IRepository<Core.Models.Task>, TaskRepository>();
+
+        services.AddHealthChecks()
+                   .AddDbContextCheck<DBContext>();
     }
 }
