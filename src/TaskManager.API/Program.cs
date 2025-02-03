@@ -45,11 +45,11 @@ app.UseHealthChecks("/health", new HealthCheckOptions
         var response = new HealthCheckReponse
         {
             Status = report.Status.ToString(),
-            HealthChecks = report.Entries.Select(x => new IndividualHealthCheckResponse
+            HealthChecks = report.Entries.Select(entry => new IndividualHealthCheckResponse
             {
-                Component = x.Key,
-                Status = x.Value.Status.ToString(),
-                Description = x.Value.Description
+                Component = entry.Key,
+                Status = entry.Value.Status.ToString(),
+                Description = entry.Value.Description
             }),
             HealthCheckDuration = report.TotalDuration
         };
