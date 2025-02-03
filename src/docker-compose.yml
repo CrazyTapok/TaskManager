@@ -12,7 +12,7 @@ services:
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManager_db;User Id=sa;Password=Admin_87654321;TrustServerCertificate=True;Encrypt=False;
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManager_docker_db;User Id=${SA_USER_ID};Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;
     depends_on:
       db:
         condition: service_healthy
@@ -22,11 +22,11 @@ services:
     image: mcr.microsoft.com/mssql/server
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=Admin_87654321 
+      - SA_PASSWORD=${SA_PASSWORD} 
     ports:
       - "1433:1433"
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Admin_87654321' -Q 'SELECT 1' -C || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SA_PASSWORD}' -Q 'SELECT 1' -C || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 20
