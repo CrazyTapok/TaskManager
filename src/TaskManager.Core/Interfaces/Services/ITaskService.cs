@@ -2,7 +2,7 @@
 
 namespace TaskManager.Core.Interfaces.Services;
 
-internal interface ITaskService : IService<Task>
+public interface ITaskService : IService<Task>
 {
     Task<List<Task>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken);
 
