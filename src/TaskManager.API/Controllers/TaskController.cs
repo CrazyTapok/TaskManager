@@ -1,21 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.API.Contracts.Request;
-using TaskManager.API.Contracts.Response;
+using TaskManager.API.Contracts.Extensions;
+using TaskManager.API.Contracts.Requests;
+using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
-using Task = TaskManager.Core.Models.Task;
 
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class TaskController : ControllerBase
+[Route("api/[controller]")]
+public class TaskController(ITaskService taskService) : ControllerBase
 {
-    private readonly ITaskService _taskService;
-
-    public TaskController(ITaskService taskService)
-    {
-        _taskService = taskService;
-    }
+    private readonly ITaskService _taskService = taskService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TaskResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -26,19 +21,7 @@ public class TaskController : ControllerBase
             return NotFound();
         }
 
-        var response = new TaskResponse
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            Status = task.Status,
-            ProjectId = task.ProjectId,
-            CreateEmployeeId = task.CreateEmployeeId,
-            AssignedEmployeeId = task.AssignedEmployeeId,
-            CreatedDate = task.CreatedDate,
-            UpdatedDate = task.UpdatedDate,
-            Image = task.Image,
-        };
+        var response = task.MapToTaskResponse();
 
         return Ok(response);
     }
@@ -46,33 +29,10 @@ public class TaskController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TaskResponse>> AddAsync([FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
-        var task = new Task
-        {
-            Title = request.Title,
-            Description = request.Description,
-            Status = request.Status,
-            ProjectId = request.ProjectId,
-            CreateEmployeeId = request.CreateEmployeeId,
-            AssignedEmployeeId = request.AssignedEmployeeId,
-            CreatedDate = request.CreatedDate,
-            UpdatedDate = request.UpdatedDate,
-            Image = request.Image
-        };
-
+        var task = request.ToTask();
         var createdTask = await _taskService.AddAsync(task, cancellationToken);
-        var response = new TaskResponse
-        {
-            Id = createdTask.Id,
-            Title = createdTask.Title,
-            Description = createdTask.Description,
-            Status = createdTask.Status,
-            ProjectId = createdTask.ProjectId,
-            CreateEmployeeId = createdTask.CreateEmployeeId,
-            AssignedEmployeeId = createdTask.AssignedEmployeeId,
-            CreatedDate = createdTask.CreatedDate,
-            UpdatedDate = createdTask.UpdatedDate,
-            Image = createdTask.Image,
-        };
+        
+        var response = createdTask.MapToTaskResponse();
 
         return CreatedAtAction(nameof(GetByIdAsync), new { id = response.Id }, response);
     }
@@ -80,22 +40,10 @@ public class TaskController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
-        var task = new Task
-        {
-            Id = id,
-            Title = request.Title,
-            Description = request.Description,
-            Status = request.Status,
-            ProjectId = request.ProjectId,
-            CreateEmployeeId = request.CreateEmployeeId,
-            AssignedEmployeeId = request.AssignedEmployeeId,
-            CreatedDate = request.CreatedDate,
-            UpdatedDate = request.UpdatedDate,
-            Image = request.Image
-        };
-
-        var result = await _taskService.UpdateAsync(task, cancellationToken);
-        if (!result)
+        var task = request.ToTask(id);
+        var updateSuccessful = await _taskService.UpdateAsync(task, cancellationToken);
+      
+        if (!updateSuccessful)
         {
             return NotFound();
         }
@@ -110,44 +58,20 @@ public class TaskController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("project/{projectId:guid}")]
+    [HttpGet("projects/{projectId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
-        var response = tasks.Select(task => new TaskResponse
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            Status = task.Status,
-            ProjectId = task.ProjectId,
-            CreateEmployeeId = task.CreateEmployeeId,
-            AssignedEmployeeId = task.AssignedEmployeeId,
-            CreatedDate = task.CreatedDate,
-            UpdatedDate = task.UpdatedDate,
-            Image = task.Image,
-        }).ToList();
+        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
     }
 
-    [HttpGet("employee/{employeeId:guid}")]
+    [HttpGet("employees/{employeeId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
-        var response = tasks.Select(task => new TaskResponse
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            Status = task.Status,
-            ProjectId = task.ProjectId,
-            CreateEmployeeId = task.CreateEmployeeId,
-            AssignedEmployeeId = task.AssignedEmployeeId,
-            CreatedDate = task.CreatedDate,
-            UpdatedDate = task.UpdatedDate,
-            Image = task.Image,
-        }).ToList();
+        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
     }
@@ -156,19 +80,7 @@ public class TaskController : ControllerBase
     public async Task<ActionResult<List<TaskResponse>>> ListAllTasksAsync(CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.ListAllAsync(cancellationToken);
-        var response = tasks.Select(task => new TaskResponse
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            Status = task.Status,
-            ProjectId = task.ProjectId,
-            CreateEmployeeId = task.CreateEmployeeId,
-            AssignedEmployeeId = task.AssignedEmployeeId,
-            CreatedDate = task.CreatedDate,
-            UpdatedDate = task.UpdatedDate,
-            Image = task.Image,
-        }).ToList();
+        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
     }

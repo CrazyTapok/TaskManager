@@ -1,8 +1,8 @@
 ﻿using AutoFixture;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using TaskManager.API.Contracts.Request;
-using TaskManager.API.Contracts.Response;
+using TaskManager.API.Contracts.Requests;
+using TaskManager.API.Contracts.Responses;
 using TaskManager.API.Controllers;
 using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;

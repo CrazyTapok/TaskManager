@@ -1,40 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.API.Contracts.Request;
-using TaskManager.API.Contracts.Response;
+using TaskManager.API.Contracts.Extensions;
+using TaskManager.API.Contracts.Requests;
+using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
-using TaskManager.Core.Models;
 
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class EmployeeController : ControllerBase
+[Route("api/[controller]")]
+public class EmployeeController(IEmployeeService employeeService) : ControllerBase
 {
-    private readonly IEmployeeService _employeeService;
-
-    public EmployeeController(IEmployeeService employeeService)
-    {
-        _employeeService = employeeService;
-    }
+    private readonly IEmployeeService _employeeService = employeeService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var employee = await _employeeService.GetByIdAsync(id, cancellationToken);
-       
         if (employee == null)
         {
             return NotFound();
         }
 
-        var response = new EmployeeResponse
-        {
-            Id = employee.Id,
-            Name = employee.Name,
-            Email = employee.Email,
-            CompanyId = employee.CompanyId,
-            Role = employee.Role
-        };
+        var response = employee.MapToEmployeeResponse();
 
         return Ok(response);
     }
@@ -42,24 +29,10 @@ public class EmployeeController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EmployeeResponse>> AddEmployeeAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var employee = new Employee
-        {
-            Name = request.Name,
-            Email = request.Email,
-            Password = request.Password,
-            CompanyId = request.CompanyId,
-            Role = request.Role
-        };
-
+        var employee = request.ToEmployee();
         var createdEmployee = await _employeeService.AddAsync(employee, cancellationToken);
-        var response = new EmployeeResponse
-        {
-            Id = createdEmployee.Id,
-            Name = createdEmployee.Name,
-            Email = createdEmployee.Email,
-            CompanyId = createdEmployee.CompanyId,
-            Role = createdEmployee.Role
-        };
+        
+        var response = createdEmployee.MapToEmployeeResponse();
 
         return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);
     }
@@ -67,18 +40,10 @@ public class EmployeeController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var employee = new Employee
-        {
-            Id = id,
-            Name = request.Name,
-            Email = request.Email,
-            Password = request.Password,
-            CompanyId = request.CompanyId,
-            Role = request.Role
-        };
-
-        var result = await _employeeService.UpdateAsync(employee, cancellationToken);
-        if (!result)
+        var employee = request.ToEmployee(id);
+        var updateSuccessful = await _employeeService.UpdateAsync(employee, cancellationToken);
+        
+        if (!updateSuccessful)
         {
             return NotFound();
         }
@@ -93,34 +58,20 @@ public class EmployeeController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("project/{projectId:guid}")]
+    [HttpGet("projects/{projectId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
-        var response = employees.Select(employee => new EmployeeResponse
-        {
-            Id = employee.Id,
-            Name = employee.Name,
-            Email = employee.Email,
-            CompanyId = employee.CompanyId,
-            Role = employee.Role
-        }).ToList();
+        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
 
         return Ok(response);
     }
 
-    [HttpGet("company/{companyId:guid}")]
+    [HttpGet("companies/{companyId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId, cancellationToken);
-        var response = employees.Select(employee => new EmployeeResponse
-        {
-            Id = employee.Id,
-            Name = employee.Name,
-            Email = employee.Email,
-            CompanyId = employee.CompanyId,
-            Role = employee.Role
-        }).ToList();
+        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
 
         return Ok(response);
     }
@@ -129,14 +80,7 @@ public class EmployeeController : ControllerBase
     public async Task<ActionResult<List<EmployeeResponse>>> ListAllEmployeesAsync(CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.ListAllAsync(cancellationToken);
-        var response = employees.Select(employee => new EmployeeResponse
-        {
-            Id = employee.Id,
-            Name = employee.Name,
-            Email = employee.Email,
-            CompanyId = employee.CompanyId,
-            Role = employee.Role
-        }).ToList();
+        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
 
         return Ok(response);
     }

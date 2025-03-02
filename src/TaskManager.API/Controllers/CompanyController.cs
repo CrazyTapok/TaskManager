@@ -1,37 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.API.Contracts.Request;
-using TaskManager.API.Contracts.Response;
+using TaskManager.API.Contracts.Extensions;
+using TaskManager.API.Contracts.Requests;
+using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;
 
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class CompanyController : ControllerBase
+[Route("api/[controller]")]
+public class CompanyController(IService<Company> companyService) : ControllerBase
 {
-    private readonly IService<Company> _companyService;
-
-    public CompanyController(IService<Company> companyService)
-    {
-        _companyService = companyService;
-    }
+    private readonly IService<Company> _companyService = companyService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CompanyResponse>> GetCompanyByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var company = await _companyService.GetByIdAsync(id, cancellationToken);
-       
         if (company == null)
         {
             return NotFound();
         }
 
-        var response = new CompanyResponse
-        {
-            Id = company.Id,
-            Title = company.Title,
-        };
+        var response = company.MapToCompanyResponse();
 
         return Ok(response);
     }
@@ -39,18 +30,10 @@ public class CompanyController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CompanyResponse>> AddCompanyAsync([FromBody] CompanyRequest request, CancellationToken cancellationToken = default)
     {
-        var company = new Company
-        {
-            Title = request.Title,
-        };
-
+        var company = request.MapToCompany();
         var createdCompany = await _companyService.AddAsync(company, cancellationToken);
-       
-        var response = new CompanyResponse
-        {
-            Id = createdCompany.Id,
-            Title = createdCompany.Title,
-        };
+
+        var response = createdCompany.MapToCompanyResponse();
 
         return CreatedAtAction(nameof(GetCompanyByIdAsync), new { id = response.Id }, response);
     }
@@ -58,15 +41,10 @@ public class CompanyController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateCompanyAsync(Guid id, [FromBody] CompanyRequest request, CancellationToken cancellationToken = default)
     {
-        var company = new Company
-        {
-            Id = id,
-            Title = request.Title,
-        };
-
-        var result = await _companyService.UpdateAsync(company, cancellationToken);
+        var company = request.MapToCompany(id);
+        var updateSuccessful = await _companyService.UpdateAsync(company, cancellationToken);
        
-        if (!result)
+        if (!updateSuccessful)
         {
             return NotFound();
         }
@@ -85,11 +63,7 @@ public class CompanyController : ControllerBase
     public async Task<ActionResult<List<CompanyResponse>>> ListAllCompaniesAsync(CancellationToken cancellationToken = default)
     {
         var companies = await _companyService.ListAllAsync(cancellationToken);
-        var response = companies.Select(company => new CompanyResponse
-        {
-            Id = company.Id,
-            Title = company.Title,
-        }).ToList();
+        var response = companies.Select(company => company.MapToCompanyResponse()).ToList();
 
         return Ok(response);
     }

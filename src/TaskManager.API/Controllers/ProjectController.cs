@@ -1,21 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TaskManager.API.Contracts.Request;
-using TaskManager.API.Contracts.Response;
+using TaskManager.API.Contracts.Extensions;
+using TaskManager.API.Contracts.Requests;
+using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
-using TaskManager.Core.Models;
 
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public class ProjectController : ControllerBase
+[Route("api/[controller]")]
+public class ProjectController(IProjectService projectService) : ControllerBase
 {
-    private readonly IProjectService _projectService;
-
-    public ProjectController(IProjectService projectService)
-    {
-        _projectService = projectService;
-    }
+    private readonly IProjectService _projectService = projectService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -26,13 +21,7 @@ public class ProjectController : ControllerBase
             return NotFound();
         }
 
-        var response = new ProjectResponse
-        {
-            Id = project.Id,
-            Title = project.Title,
-            ManagerId = project.ManagerId,
-            CompanyId = project.CompanyId,
-        };
+        var response = project.MapToProjectResponse();
 
         return Ok(response);
     }
@@ -40,22 +29,10 @@ public class ProjectController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> AddProjectAsync([FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
-        var project = new Project
-        {
-            Title = request.Title,
-            ManagerId = request.ManagerId,
-            CompanyId = request.CompanyId,
-        };
-
+        var project = request.ToProject();
         var createdProject = await _projectService.AddAsync(project, cancellationToken);
-       
-        var response = new ProjectResponse
-        {
-            Id = createdProject.Id,
-            Title = createdProject.Title,
-            ManagerId = createdProject.ManagerId,
-            CompanyId = createdProject.CompanyId,
-        };
+
+        var response = createdProject.MapToProjectResponse();
 
         return CreatedAtAction(nameof(GetProjectByIdAsync), new { id = response.Id }, response);
     }
@@ -63,17 +40,10 @@ public class ProjectController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateProjectAsync(Guid id, [FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
-        var project = new Project
-        {
-            Id = id,
-            Title = request.Title,
-            ManagerId = request.ManagerId,
-            CompanyId = request.CompanyId,
-        };
+        var project = request.ToProject(id);
+        var updateSuccessful = await _projectService.UpdateAsync(project, cancellationToken);
 
-        var result = await _projectService.UpdateAsync(project, cancellationToken);
-       
-        if (!result)
+        if (!updateSuccessful)
         {
             return NotFound();
         }
@@ -88,17 +58,11 @@ public class ProjectController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("employee/{employeeId:guid}")]
+    [HttpGet("employees/{employeeId:guid}/projects")]
     public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
         var projects = await _projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
-        var response = projects.Select(project => new ProjectResponse
-        {
-            Id = project.Id,
-            Title = project.Title,
-            ManagerId = project.ManagerId,
-            CompanyId = project.CompanyId,
-        }).ToList();
+        var response = projects.Select(project => project.MapToProjectResponse()).ToList();
 
         return Ok(response);
     }
@@ -107,13 +71,7 @@ public class ProjectController : ControllerBase
     public async Task<ActionResult<List<ProjectResponse>>> ListAllProjectsAsync(CancellationToken cancellationToken = default)
     {
         var projects = await _projectService.ListAllAsync(cancellationToken);
-        var response = projects.Select(project => new ProjectResponse
-        {
-            Id = project.Id,
-            Title = project.Title,
-            ManagerId = project.ManagerId,
-            CompanyId = project.CompanyId,
-        }).ToList();
+        var response = projects.Select(project => project.MapToProjectResponse()).ToList();
 
         return Ok(response);
     }
