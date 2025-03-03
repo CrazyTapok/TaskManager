@@ -8,9 +8,11 @@ namespace TaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EmployeeController(IEmployeeService employeeService) : ControllerBase
+public class EmployeeController(IEmployeeService employeeService, IProjectService projectService, ITaskService taskService) : ControllerBase
 {
     private readonly IEmployeeService _employeeService = employeeService;
+    private readonly IProjectService _projectService = projectService;
+    private readonly ITaskService _taskService = taskService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -58,20 +60,20 @@ public class EmployeeController(IEmployeeService employeeService) : ControllerBa
         return NoContent();
     }
 
-    [HttpGet("projects/{projectId:guid}/employees")]
-    public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
+    [HttpGet("employees/{employeeId:guid}/projects")]
+    public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
-        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
+        var projects = await _projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
+        var response = projects.Select(project => project.MapToProjectResponse()).ToList();
 
         return Ok(response);
     }
 
-    [HttpGet("companies/{companyId:guid}/employees")]
-    public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
+    [HttpGet("employees/{employeeId:guid}/tasks")]
+    public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId, cancellationToken);
-        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
+        var tasks = await _taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
+        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
     }

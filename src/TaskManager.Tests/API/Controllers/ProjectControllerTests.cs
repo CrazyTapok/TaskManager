@@ -13,6 +13,8 @@ namespace TaskManager.API.Tests.Controllers;
 public class ProjectControllerTests
 {
     private readonly Mock<IProjectService> _mockProjectService;
+    private readonly Mock<ITaskService> _mockTaskService;
+    private readonly Mock<IEmployeeService> _mockEmployeeService;
     private readonly ProjectController _controller;
     private readonly Fixture _fixture;
     private readonly CancellationToken _cancellationToken;
@@ -20,7 +22,9 @@ public class ProjectControllerTests
     public ProjectControllerTests()
     {
         _mockProjectService = new Mock<IProjectService>();
-        _controller = new ProjectController(_mockProjectService.Object);
+        _mockTaskService = new Mock<ITaskService>();
+        _mockEmployeeService = new Mock<IEmployeeService>();
+        _controller = new ProjectController(_mockProjectService.Object, _mockEmployeeService.Object, _mockTaskService.Object);
         _fixture = new Fixture();
         _cancellationToken = new CancellationToken();
 
@@ -127,22 +131,41 @@ public class ProjectControllerTests
     }
 
     [Fact]
-    public async Task GetProjectsByEmployeeIdAsync_ReturnsOkResult_WithProjects()
+    public async Task GetTasksByProjectIdAsync_ReturnsOkResult_WithTasks()
     {
         // Arrange
         var expectedCount = 2;
-        var employeeId = Guid.NewGuid();
-        var projects = _fixture.CreateMany<Project>(expectedCount).ToList();
-        _mockProjectService.Setup(service => service.GetProjectsByEmployeeIdAsync(employeeId, _cancellationToken))
-                           .ReturnsAsync(projects);
+        var projectId = Guid.NewGuid();
+        var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
+        _mockTaskService.Setup(service => service.GetTasksByProjectIdAsync(projectId, _cancellationToken))
+                        .ReturnsAsync(tasks);
 
         // Act
-        var result = await _controller.GetProjectsByEmployeeIdAsync(employeeId);
+        var result = await _controller.GetTasksByProjectIdAsync(projectId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var projectResponses = Assert.IsType<List<ProjectResponse>>(okResult.Value);
-        Assert.Equal(expectedCount, projectResponses.Count);
+        var taskResponses = Assert.IsType<List<TaskResponse>>(okResult.Value);
+        Assert.Equal(expectedCount, taskResponses.Count);
+    }
+
+    [Fact]
+    public async Task GetEmployeesByProjectIdAsync_ReturnsOkResult_WithEmployees()
+    {
+        // Arrange
+        var expectedCount = 2;
+        var projectId = Guid.NewGuid();
+        var employees = _fixture.CreateMany<Employee>(expectedCount).ToList();
+        _mockEmployeeService.Setup(service => service.GetEmployeesByProjectIdAsync(projectId, _cancellationToken))
+                            .ReturnsAsync(employees);
+
+        // Act
+        var result = await _controller.GetEmployeesByProjectIdAsync(projectId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var employeeResponses = Assert.IsType<List<EmployeeResponse>>(okResult.Value);
+        Assert.Equal(expectedCount, employeeResponses.Count);
     }
 
     [Fact]

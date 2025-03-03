@@ -9,9 +9,10 @@ namespace TaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CompanyController(IService<Company> companyService) : ControllerBase
+public class CompanyController(IService<Company> companyService, IEmployeeService employeeService) : ControllerBase
 {
     private readonly IService<Company> _companyService = companyService;
+    private readonly IEmployeeService _employeeService = employeeService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CompanyResponse>> GetCompanyByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -57,6 +58,15 @@ public class CompanyController(IService<Company> companyService) : ControllerBas
     {
         await _companyService.DeleteAsync(id, cancellationToken);
         return NoContent();
+    }
+
+    [HttpGet("companies/{companyId:guid}/employees")]
+    public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
+    {
+        var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId, cancellationToken);
+        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
+
+        return Ok(response);
     }
 
     [HttpGet]

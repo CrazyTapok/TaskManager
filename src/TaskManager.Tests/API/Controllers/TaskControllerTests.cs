@@ -134,44 +134,6 @@ namespace TaskManager.API.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetTasksByProjectIdAsync_ReturnsOkResult_WithTasks()
-        {
-            // Arrange
-            var expectedCount = 2;
-            var projectId = Guid.NewGuid();
-            var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
-            _mockTaskService.Setup(service => service.GetTasksByProjectIdAsync(projectId, _cancellationToken))
-                            .ReturnsAsync(tasks);
-
-            // Act
-            var result = await _controller.GetTasksByProjectIdAsync(projectId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var taskResponses = Assert.IsType<List<TaskResponse>>(okResult.Value);
-            Assert.Equal(expectedCount, taskResponses.Count);
-        }
-
-        [Fact]
-        public async Task GetTasksByEmployeeIdAsync_ReturnsOkResult_WithTasks()
-        {
-            // Arrange
-            var expectedCount = 2;
-            var employeeId = Guid.NewGuid();
-            var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
-            _mockTaskService.Setup(service => service.GetTasksByEmployeeIdAsync(employeeId, _cancellationToken))
-                            .ReturnsAsync(tasks);
-
-            // Act
-            var result = await _controller.GetTasksByEmployeeIdAsync(employeeId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var taskResponses = Assert.IsType<List<TaskResponse>>(okResult.Value);
-            Assert.Equal(expectedCount, taskResponses.Count);
-        }
-
-        [Fact]
         public async Task ListAllTasksAsync_ReturnsOkResult_WithTasks()
         {
             // Arrange

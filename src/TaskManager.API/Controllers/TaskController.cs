@@ -58,24 +58,6 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("projects/{projectId:guid}/tasks")]
-    public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
-    {
-        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
-        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
-
-        return Ok(response);
-    }
-
-    [HttpGet("employees/{employeeId:guid}/tasks")]
-    public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
-    {
-        var tasks = await _taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
-        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
-
-        return Ok(response);
-    }
-
     [HttpGet]
     public async Task<ActionResult<List<TaskResponse>>> ListAllTasksAsync(CancellationToken cancellationToken = default)
     {

@@ -13,6 +13,7 @@ namespace TaskManager.API.Tests.Controllers;
 public class CompanyControllerTests
 {
     private readonly Mock<IService<Company>> _mockCompanyService;
+    private readonly Mock<IEmployeeService> _mockEmployeeService;
     private readonly CompanyController _controller;
     private readonly Fixture _fixture;
     private readonly CancellationToken _cancellationToken;
@@ -20,7 +21,8 @@ public class CompanyControllerTests
     public CompanyControllerTests()
     {
         _mockCompanyService = new Mock<IService<Company>>();
-        _controller = new CompanyController(_mockCompanyService.Object);
+        _mockEmployeeService = new Mock<IEmployeeService>();
+        _controller = new CompanyController(_mockCompanyService.Object, _mockEmployeeService.Object);
         _fixture = new Fixture();
         _cancellationToken = new CancellationToken();
 
@@ -124,6 +126,25 @@ public class CompanyControllerTests
 
         // Assert
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetEmployeesByCompanyIdAsync_ReturnsOkResult_WithEmployees()
+    {
+        // Arrange
+        var expectedCount = 2;
+        var companyId = Guid.NewGuid();
+        var employees = _fixture.CreateMany<Employee>(expectedCount).ToList();
+        _mockEmployeeService.Setup(service => service.GetEmployeesByCompanyIdAsync(companyId, _cancellationToken))
+                            .ReturnsAsync(employees);
+
+        // Act
+        var result = await _controller.GetEmployeesByCompanyIdAsync(companyId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var employeeResponses = Assert.IsType<List<EmployeeResponse>>(okResult.Value);
+        Assert.Equal(expectedCount, employeeResponses.Count);
     }
 
     [Fact]

@@ -13,6 +13,8 @@ namespace TaskManager.API.Tests.Controllers
     public class EmployeeControllerTests
     {
         private readonly Mock<IEmployeeService> _mockEmployeeService;
+        private readonly Mock<IProjectService> _mockProjectService;
+        private readonly Mock<ITaskService> _mockTaskService;
         private readonly EmployeeController _controller;
         private readonly Fixture _fixture;
         private readonly CancellationToken _cancellationToken;
@@ -20,7 +22,9 @@ namespace TaskManager.API.Tests.Controllers
         public EmployeeControllerTests()
         {
             _mockEmployeeService = new Mock<IEmployeeService>();
-            _controller = new EmployeeController(_mockEmployeeService.Object);
+            _mockProjectService = new Mock<IProjectService>();
+            _mockTaskService = new Mock<ITaskService>();
+            _controller = new EmployeeController(_mockEmployeeService.Object, _mockProjectService.Object, _mockTaskService.Object);
             _fixture = new Fixture();
             _cancellationToken = new CancellationToken();
 
@@ -130,41 +134,41 @@ namespace TaskManager.API.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetEmployeesByProjectIdAsync_ReturnsOkResult_WithEmployees()
+        public async Task GetProjectsByEmployeeIdAsync_ReturnsOkResult_WithProjects()
         {
             // Arrange
             var expectedCount = 2;
-            var projectId = Guid.NewGuid();
-            var employees = _fixture.CreateMany<Employee>(expectedCount).ToList();
-            _mockEmployeeService.Setup(service => service.GetEmployeesByProjectIdAsync(projectId, _cancellationToken))
-                                .ReturnsAsync(employees);
+            var employeeId = Guid.NewGuid();
+            var projects = _fixture.CreateMany<Project>(expectedCount).ToList();
+            _mockProjectService.Setup(service => service.GetProjectsByEmployeeIdAsync(employeeId, _cancellationToken))
+                               .ReturnsAsync(projects);
 
             // Act
-            var result = await _controller.GetEmployeesByProjectIdAsync(projectId);
+            var result = await _controller.GetProjectsByEmployeeIdAsync(employeeId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var employeeResponses = Assert.IsType<List<EmployeeResponse>>(okResult.Value);
-            Assert.Equal(expectedCount, employeeResponses.Count);
+            var projectResponses = Assert.IsType<List<ProjectResponse>>(okResult.Value);
+            Assert.Equal(expectedCount, projectResponses.Count);
         }
 
         [Fact]
-        public async Task GetEmployeesByCompanyIdAsync_ReturnsOkResult_WithEmployees()
+        public async Task GetTasksByEmployeeIdAsync_ReturnsOkResult_WithTasks()
         {
             // Arrange
             var expectedCount = 2;
-            var companyId = Guid.NewGuid();
-            var employees = _fixture.CreateMany<Employee>(expectedCount).ToList();
-            _mockEmployeeService.Setup(service => service.GetEmployeesByCompanyIdAsync(companyId, _cancellationToken))
-                                .ReturnsAsync(employees);
+            var employeeId = Guid.NewGuid();
+            var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
+            _mockTaskService.Setup(service => service.GetTasksByEmployeeIdAsync(employeeId, _cancellationToken))
+                            .ReturnsAsync(tasks);
 
             // Act
-            var result = await _controller.GetEmployeesByCompanyIdAsync(companyId);
+            var result = await _controller.GetTasksByEmployeeIdAsync(employeeId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var employeeResponses = Assert.IsType<List<EmployeeResponse>>(okResult.Value);
-            Assert.Equal(expectedCount, employeeResponses.Count);
+            var taskResponses = Assert.IsType<List<TaskResponse>>(okResult.Value);
+            Assert.Equal(expectedCount, taskResponses.Count);
         }
 
         [Fact]

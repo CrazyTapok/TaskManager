@@ -8,9 +8,11 @@ namespace TaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectController(IProjectService projectService) : ControllerBase
+public class ProjectController(IProjectService projectService, IEmployeeService employeeService, ITaskService taskService) : ControllerBase
 {
     private readonly IProjectService _projectService = projectService;
+    private readonly IEmployeeService _employeeService = employeeService;
+    private readonly ITaskService _taskService = taskService;
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -58,11 +60,20 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("employees/{employeeId:guid}/projects")]
-    public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
+    [HttpGet("projects/{projectId:guid}/employees")]
+    public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        var projects = await _projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
-        var response = projects.Select(project => project.MapToProjectResponse()).ToList();
+        var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
+        var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
+
+        return Ok(response);
+    }
+
+    [HttpGet("projects/{projectId:guid}/tasks")]
+    public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
+    {
+        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
+        var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
     }
