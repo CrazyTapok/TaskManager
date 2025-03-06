@@ -14,9 +14,6 @@ public static class ValidationServiceExtensions
 
         // Registration of all validators
         services.AddValidatorsFromAssemblyContaining<CompanyRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<EmployeeRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<ProjectRequestValidator>();
-        services.AddValidatorsFromAssemblyContaining<TaskRequestValidator>();
 
         return services;
     }

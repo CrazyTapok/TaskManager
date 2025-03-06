@@ -1,6 +1,7 @@
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Newtonsoft.Json;
+using System.Globalization;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
@@ -26,6 +27,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContextInfrastructure(builder.Configuration);
 
 builder.Services.AddServiceModule();
+
+// Set culture to English (United States)
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
 var app = builder.Build();
 

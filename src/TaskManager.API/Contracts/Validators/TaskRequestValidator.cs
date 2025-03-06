@@ -8,12 +8,12 @@ public class TaskRequestValidator : AbstractValidator<TaskRequest>
     public TaskRequestValidator()
     {
         RuleFor(task => task.Title)
-            .NotEmpty().WithMessage("The task name is required.")
-            .MaximumLength(100).WithMessage("The task name must not exceed 100 characters.");
+            .NotEmpty()
+            .MaximumLength(100);
 
         RuleFor(task => task.Description)
-            .NotEmpty().WithMessage("The task description is required.")
-            .MaximumLength(500).WithMessage("The task description should not exceed 500 characters.");
+            .NotEmpty()
+            .MaximumLength(500);
 
         RuleFor(task => task.Status)
             .IsInEnum().WithMessage("The issue status is incorrect.");
