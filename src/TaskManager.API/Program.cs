@@ -1,6 +1,8 @@
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Newtonsoft.Json;
+using System.Globalization;
+using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
 using TaskManager.Infrastructure.EF;
@@ -14,6 +16,10 @@ Env.Load();
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Registration of FluentValidation via the extension method
+builder.Services.AddValidationServices();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -21,6 +27,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContextInfrastructure(builder.Configuration);
 
 builder.Services.AddServiceModule();
+
+// Set culture to English (United States)
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
 var app = builder.Build();
 
