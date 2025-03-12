@@ -9,4 +9,6 @@ public interface IEmployeeService : IService<Employee>
     Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken);
 
     Task<Employee?> GetEmployeeByEmailAsync(string email, CancellationToken cancellationToken);
+
+    Task<Employee?> RegisterAsync(Employee employee, CancellationToken cancellationToken);
 }

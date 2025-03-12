@@ -19,7 +19,10 @@ builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.SuppressAsyncSuffixInActionNames = false;
+});
 
 // Registration of FluentValidation via the extension method
 builder.Services.AddValidationServices();

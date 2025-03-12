@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -28,6 +29,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> AddProjectAsync([FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
@@ -39,6 +41,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return CreatedAtAction(nameof(GetProjectByIdAsync), new { id = response.Id }, response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateProjectAsync(Guid id, [FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
@@ -53,6 +56,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteProjectAsync(Guid id, CancellationToken cancellationToken = default)
     {

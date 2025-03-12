@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -26,6 +27,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost]
     public async Task<ActionResult<TaskResponse>> AddAsync([FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
@@ -37,6 +39,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return CreatedAtAction(nameof(GetByIdAsync), new { id = response.Id }, response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
@@ -51,6 +54,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {

@@ -8,7 +8,7 @@ namespace TaskManager.Infrastructure.Repositories;
 
 internal class EmployeeRepository(DBContext context) : Repository<Employee>(context), IEmployeeRepository
 {
-    public new Task<List<Employee>> FindAsync(Expression<Func<Employee, bool>> predicate, CancellationToken cancellationToken = default)
+    public override Task<List<Employee>> FindAsync(Expression<Func<Employee, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return _dbSet.Where(predicate)
             .Include(employee => employee.Company)

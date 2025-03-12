@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
 using TaskManager.Core.Services;
+using TaskManager.Core.Utilities;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Tests.Core.Services
@@ -124,6 +125,54 @@ namespace TaskManager.Tests.Core.Services
 
             // Assert
             Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_AddsEmployee_WhenValid()
+        {
+            // Arrange
+            var originalPassword = _fixture.Create<string>();
+            var employee = _fixture.Build<Employee>()
+                .With(e => e.Email, "test007@example.com")
+                .With(e => e.Password, originalPassword)
+                .Create();
+
+            _mockRepo.Setup(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken))
+                .ReturnsAsync((Employee?)null);
+
+            _mockRepo.Setup(repo => repo.AddAsync(It.IsAny<Employee>(), _cancellationToken))
+                .ReturnsAsync((Employee e, CancellationToken _) => e);
+
+            // Act
+            var result = await _service.RegisterAsync(employee, _cancellationToken);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(employee.Email, result.Email);
+            Assert.NotEqual(originalPassword, result.Password);
+
+            // Assuming `PasswordHelper` has a `VerifyPassword` method:
+            Assert.True(PasswordHelper.VerifyPassword(originalPassword, result.Password));
+
+            _mockRepo.Verify(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken), Times.Once);
+            _mockRepo.Verify(repo => repo.AddAsync(It.Is<Employee>(e => e.Password != originalPassword && PasswordHelper.VerifyPassword(originalPassword, e.Password)), _cancellationToken), Times.Once);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ThrowsInvalidOperationException_WhenEmployeeAlreadyExists()
+        {
+            // Arrange
+            var employee = _fixture.Build<Employee>().With(e => e.Email, "test007@example.com").Create();
+            _mockRepo.Setup(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken))
+                .ReturnsAsync(employee);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.RegisterAsync(employee, _cancellationToken));
+
+            Assert.Equal("A user with this email already exists.", exception.Message);
+            _mockRepo.Verify(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken), Times.Once);
+            _mockRepo.Verify(repo => repo.AddAsync(It.IsAny<Employee>(), _cancellationToken), Times.Never);
         }
     }
 }

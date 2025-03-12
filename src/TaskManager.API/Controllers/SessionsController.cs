@@ -2,32 +2,31 @@
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
-using TaskManager.Core.Utilities;
 
 namespace TaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SessionsController(IEmployeeService employeeService, IJwtTokenService jwtTokenService) : ControllerBase
+public class SessionsController(IAuthService authService) : ControllerBase
 {
-    private readonly IEmployeeService _employeeService = employeeService;
-    private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+    private readonly IAuthService _authService = authService;
 
     [HttpPost]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
     {
         if (request == null)
         {
-            return BadRequest();
+            return BadRequest("Request cannot be null.");
         }
 
-        var employee = await _employeeService.GetEmployeeByEmailAsync(request.Email, cancellationToken);
-        if (employee == null || !PasswordHelper.VerifyPassword(request.Password, employee.Password))
+        try
         {
-            return Unauthorized("Invalid email or password.");
+            var token = await _authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
+            return Ok(new LoginResponse(token));
         }
-
-        var token = _jwtTokenService.GenerateToken(employee);
-        return Ok(new LoginResponse(token));
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
     }
 }

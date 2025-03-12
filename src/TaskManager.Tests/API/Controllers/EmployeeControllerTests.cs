@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.API.Controllers;
@@ -64,51 +65,6 @@ namespace TaskManager.API.Tests.Controllers
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
-        }
-
-        [Fact]
-        public async Task RegisterAsync_ReturnsCreatedAtActionResult_WhenEmployeeIsRegistered()
-        {
-            // Arrange
-            var employeeRequest = _fixture.Create<EmployeeRequest>();
-            var createdEmployee = _fixture.Build<Employee>()
-                .With(employee => employee.Email, employeeRequest.Email)
-                .With(employee => employee.Name, employeeRequest.Name)
-                .Create();
-
-            _mockEmployeeService.Setup(service => service.GetEmployeeByEmailAsync(employeeRequest.Email, _cancellationToken))
-                .ReturnsAsync((Employee)null); 
-            _mockEmployeeService.Setup(service => service.AddAsync(It.IsAny<Employee>(), _cancellationToken))
-                .ReturnsAsync(createdEmployee);
-
-            // Act
-            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
-
-            // Assert
-            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
-            var employeeResponse = Assert.IsType<EmployeeResponse>(createdAtActionResult.Value);
-
-            Assert.Equal(createdEmployee.Id, employeeResponse.Id);
-            Assert.Equal(createdEmployee.Email, employeeResponse.Email);
-        }
-
-        [Fact]
-        public async Task RegisterAsync_ReturnsConflictResult_WhenEmployeeAlreadyExists()
-        {
-            // Arrange
-            var employeeRequest = _fixture.Create<EmployeeRequest>();
-            var existingEmployee = _fixture.Build<Employee>()
-                .With(employee => employee.Email, employeeRequest.Email)
-                .Create();
-
-            _mockEmployeeService.Setup(service => service.GetEmployeeByEmailAsync(employeeRequest.Email, _cancellationToken))
-                .ReturnsAsync(existingEmployee);
-
-            // Act
-            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
-
-            // Assert
-            Assert.IsType<ConflictObjectResult>(result);
         }
 
         [Fact]
@@ -211,6 +167,82 @@ namespace TaskManager.API.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
             var employeeResponses = Assert.IsType<List<EmployeeResponse>>(okResult.Value);
             Assert.Equal(expectedCount, employeeResponses.Count);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ReturnsCreatedAtActionResult_WhenEmployeeIsRegisteredSuccessfully()
+        {
+            // Arrange
+            var email = "newuser@example.com";
+            var employeeRequest = _fixture.Build<EmployeeRequest>().With(employee => employee.Email, email).Create();
+            var createdEmployee = _fixture.Build<Employee>().With(employee => employee.Email, email).Create();
+            var employeeResponse = createdEmployee.MapToEmployeeResponse();
+
+            _mockEmployeeService.Setup(service => service.RegisterAsync(It.IsAny<Employee>(), _cancellationToken))
+                .ReturnsAsync(createdEmployee);
+
+            _mockEmployeeService.Setup(service => service.GetByIdAsync(createdEmployee.Id, _cancellationToken))
+                .ReturnsAsync(createdEmployee);
+
+            // Act
+            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
+
+            // Assert
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+            var response = Assert.IsType<EmployeeResponse>(createdResult.Value);
+
+            Assert.Equal(employeeResponse.Id, response.Id);
+            Assert.Equal(employeeResponse.Email, response.Email);
+            Assert.Equal(nameof(_controller.GetEmployeeByIdAsync), createdResult.ActionName);
+
+            _mockEmployeeService.Verify(service => service.RegisterAsync(It.IsAny<Employee>(), _cancellationToken), Times.Once);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ReturnsConflict_WhenEmailAlreadyExists()
+        {
+            // Arrange
+            var email = "existinguser@example.com";
+            var employeeRequest = _fixture.Build<EmployeeRequest>().With(employee => employee.Email, email).Create();
+
+            _mockEmployeeService.Setup(service => service.RegisterAsync(It.IsAny<Employee>(), _cancellationToken))
+                .ThrowsAsync(new InvalidOperationException("A user with this email already exists."));
+
+            // Act
+            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
+
+            // Assert
+            var conflictResult = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Equal("A user with this email already exists.", conflictResult.Value);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ReturnsBadRequest_WhenEmailIsInvalid()
+        {
+            // Arrange
+            var employeeRequest = _fixture.Build<EmployeeRequest>().With(employee => employee.Email, "").Create();
+
+            _mockEmployeeService.Setup(service => service.RegisterAsync(It.IsAny<Employee>(), _cancellationToken))
+                .ThrowsAsync(new ArgumentException("Email cannot be null or whitespace.", "Email"));
+
+            // Act
+            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Email cannot be null or whitespace. (Parameter 'Email')", badRequestResult.Value);
+        }
+
+
+        [Fact]
+        public async Task RegisterAsync_ReturnsBadRequest_WhenRequestIsNull()
+        {
+            // Act
+            var result = await _controller.RegisterAsync(null, _cancellationToken);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("The request cannot be null.", badRequestResult.Value);
         }
     }
 }

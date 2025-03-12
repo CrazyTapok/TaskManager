@@ -1,6 +1,7 @@
 ﻿using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;
+using TaskManager.Core.Utilities;
 
 namespace TaskManager.Core.Services;
 
@@ -11,6 +12,20 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
     public EmployeeService(IEmployeeRepository employeeRepository) : base(employeeRepository)
     {
         _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+    }
+
+    public async Task<Employee?> RegisterAsync(Employee employee, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(employee.Email))
+            throw new ArgumentException("Email cannot be null or whitespace.", nameof(employee.Email));
+
+        var existingEmployee = await _employeeRepository.GetByEmailAsync(employee.Email, cancellationToken);
+        if (existingEmployee != null)
+            throw new InvalidOperationException("A user with this email already exists.");
+
+        employee.Password = PasswordHelper.HashPassword(employee.Password);
+
+        return await _employeeRepository.AddAsync(employee, cancellationToken);
     }
 
     public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default) 

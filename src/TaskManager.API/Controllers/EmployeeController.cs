@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -35,24 +36,29 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     {
         if (request == null)
         {
-            return BadRequest();
+            return BadRequest("The request cannot be null.");
         }
 
-        var existingEmployee = await _employeeService.GetEmployeeByEmailAsync(request.Email, cancellationToken);
-        if (existingEmployee != null)
+        try
         {
-            return Conflict("A user with this email already exists.");
+            var employee = request.ToEmployee();
+            var createdEmployee = await _employeeService.RegisterAsync(employee, cancellationToken);
+
+            var response = createdEmployee.MapToEmployeeResponse();
+
+            return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);
         }
-        
-        var employee = request.ToEmployee();
-        employee.Password = PasswordHelper.HashPassword(request.Password);
-        var createdEmployee = await _employeeService.AddAsync(employee, cancellationToken);
-
-        var response = createdEmployee.MapToEmployeeResponse();
-
-        return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
@@ -67,6 +73,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteEmployeeAsync(Guid id, CancellationToken cancellationToken = default)
     {
