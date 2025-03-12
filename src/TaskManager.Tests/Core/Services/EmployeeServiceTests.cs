@@ -10,14 +10,14 @@ namespace TaskManager.Tests.Core.Services
 {
     public class EmployeeServiceTests
     {
-        private readonly Mock<IRepository<Employee>> _mockRepo;
+        private readonly Mock<IEmployeeRepository> _mockRepo;
         private readonly EmployeeService _service;
         private readonly CancellationToken _cancellationToken;
         private readonly Fixture _fixture;
 
         public EmployeeServiceTests()
         {
-            _mockRepo = new Mock<IRepository<Employee>>();
+            _mockRepo = new Mock<IEmployeeRepository>();
             _service = new EmployeeService(_mockRepo.Object);
             _cancellationToken = new CancellationToken();
             _fixture = new Fixture();
@@ -52,20 +52,20 @@ namespace TaskManager.Tests.Core.Services
             Assert.All(result, employee => Assert.Contains(employee, employees));
         }
 
-        [Fact] 
-        public async Task GetEmployeesByCompanyIdAsync() 
+        [Fact]
+        public async Task GetEmployeesByCompanyIdAsync()
         {
             // Arrange
             var expectedCount = 2;
-            var companyId = Guid.NewGuid(); 
-            var employees = new List<Employee> 
+            var companyId = Guid.NewGuid();
+            var employees = new List<Employee>
             {
-               
+
                 _fixture.Build<Employee>().With(employee => employee.CompanyId, companyId).Create(),
                 _fixture.Build<Employee>().With(employee => employee.CompanyId, companyId).Create(),
                 _fixture.Build<Employee>().With(employee => employee.CompanyId, Guid.NewGuid).Create()
-            }; 
-            
+            };
+
             _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>(), _cancellationToken))
                 .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => employees.Where(predicate.Compile()).ToList());
 
@@ -73,8 +73,57 @@ namespace TaskManager.Tests.Core.Services
             var result = await _service.GetEmployeesByCompanyIdAsync(companyId, _cancellationToken);
 
             // Assert
-            Assert.Equal(expectedCount, result.Count); 
-            Assert.All(result, employee => Assert.Contains(employee, employees)); 
+            Assert.Equal(expectedCount, result.Count);
+            Assert.All(result, employee => Assert.Contains(employee, employees));
+        }
+
+        [Fact]
+        public async Task GetEmployeeByEmailAsync_ReturnsEmployee_WhenEmailIsValid()
+        {
+            // Arrange
+            var email = "test@example.com";
+            var employee = _fixture.Build<Employee>().With(employee => employee.Email, email).Create();
+
+            _mockRepo.Setup(repo => repo.GetByEmailAsync(email, _cancellationToken))
+                .ReturnsAsync(employee);
+
+            // Act
+            var result = await _service.GetEmployeeByEmailAsync(email, _cancellationToken);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(email, result!.Email);
+        }
+
+        [Fact]
+        public async Task GetEmployeeByEmailAsync_ThrowsArgumentException_WhenEmailIsNullOrWhitespace()
+        {
+            // Arrange
+            var invalidEmails = new[] { null, "", " " };
+
+            foreach (var email in invalidEmails)
+            {
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                    _service.GetEmployeeByEmailAsync(email!, _cancellationToken));
+
+                Assert.Equal("Email cannot be null or whitespace. (Parameter 'email')", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task GetEmployeeByEmailAsync_ReturnsNull_WhenEmployeeNotFound()
+        {
+            // Arrange
+            var email = "test007@example.com";
+
+            _mockRepo.Setup(repo => repo.GetByEmailAsync(email, _cancellationToken)).ReturnsAsync((Employee?)null);
+
+            // Act
+            var result = await _service.GetEmployeeByEmailAsync(email, _cancellationToken);
+
+            // Assert
+            Assert.Null(result);
         }
     }
 }

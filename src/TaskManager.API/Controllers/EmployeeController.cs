@@ -3,6 +3,8 @@ using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Models;
+using TaskManager.Core.Utilities;
 
 namespace TaskManager.API.Controllers;
 
@@ -29,11 +31,23 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     }
 
     [HttpPost]
-    public async Task<ActionResult<EmployeeResponse>> AddEmployeeAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RegisterAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var employee = request.ToEmployee();
-        var createdEmployee = await _employeeService.AddAsync(employee, cancellationToken);
+        if (request == null)
+        {
+            return BadRequest();
+        }
+
+        var existingEmployee = await _employeeService.GetEmployeeByEmailAsync(request.Email, cancellationToken);
+        if (existingEmployee != null)
+        {
+            return Conflict("A user with this email already exists.");
+        }
         
+        var employee = request.ToEmployee();
+        employee.Password = PasswordHelper.HashPassword(request.Password);
+        var createdEmployee = await _employeeService.AddAsync(employee, cancellationToken);
+
         var response = createdEmployee.MapToEmployeeResponse();
 
         return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);

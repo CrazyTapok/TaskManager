@@ -51,4 +51,22 @@ public class EmployeeRepositoryTests
         Assert.Equal(matchingEmployees.Count, result.Count);
         Assert.All(result, employee => Assert.Contains(employeeName, employee.Name));
     }
+
+    [Fact]
+    public async Task GetByEmailAsync_ReturnsCorrectEmployee()
+    {
+        // Arrange
+        var employeeEmail = "test@example.com";
+        var employee = _fixture.Build<Employee>().With(employee => employee.Email, employeeEmail).Create();
+
+        await _context.Set<Employee>().AddAsync(employee);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _employeeRepository.GetByEmailAsync(employeeEmail, _cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(employeeEmail, result!.Email);
+    }
 }

@@ -67,24 +67,48 @@ namespace TaskManager.API.Tests.Controllers
         }
 
         [Fact]
-        public async Task AddEmployeeAsync_ReturnsCreatedAtActionResult_WhenEmployeeIsCreated()
+        public async Task RegisterAsync_ReturnsCreatedAtActionResult_WhenEmployeeIsRegistered()
         {
             // Arrange
             var employeeRequest = _fixture.Create<EmployeeRequest>();
             var createdEmployee = _fixture.Build<Employee>()
-                                          .With(employee => employee.Name, employeeRequest.Name)
-                                          .With(employee => employee.Email, employeeRequest.Email)
-                                          .Create();
+                .With(employee => employee.Email, employeeRequest.Email)
+                .With(employee => employee.Name, employeeRequest.Name)
+                .Create();
+
+            _mockEmployeeService.Setup(service => service.GetEmployeeByEmailAsync(employeeRequest.Email, _cancellationToken))
+                .ReturnsAsync((Employee)null); 
             _mockEmployeeService.Setup(service => service.AddAsync(It.IsAny<Employee>(), _cancellationToken))
-                                .ReturnsAsync(createdEmployee);
+                .ReturnsAsync(createdEmployee);
 
             // Act
-            var result = await _controller.AddEmployeeAsync(employeeRequest);
+            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
 
             // Assert
-            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
             var employeeResponse = Assert.IsType<EmployeeResponse>(createdAtActionResult.Value);
+
             Assert.Equal(createdEmployee.Id, employeeResponse.Id);
+            Assert.Equal(createdEmployee.Email, employeeResponse.Email);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ReturnsConflictResult_WhenEmployeeAlreadyExists()
+        {
+            // Arrange
+            var employeeRequest = _fixture.Create<EmployeeRequest>();
+            var existingEmployee = _fixture.Build<Employee>()
+                .With(employee => employee.Email, employeeRequest.Email)
+                .Create();
+
+            _mockEmployeeService.Setup(service => service.GetEmployeeByEmailAsync(employeeRequest.Email, _cancellationToken))
+                .ReturnsAsync(existingEmployee);
+
+            // Act
+            var result = await _controller.RegisterAsync(employeeRequest, _cancellationToken);
+
+            // Assert
+            Assert.IsType<ConflictObjectResult>(result);
         }
 
         [Fact]

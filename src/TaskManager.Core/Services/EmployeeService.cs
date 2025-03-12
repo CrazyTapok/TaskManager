@@ -6,9 +6,9 @@ namespace TaskManager.Core.Services;
 
 internal class EmployeeService : Service<Employee>, IEmployeeService 
 {
-    private readonly IRepository<Employee> _employeeRepository;
+    private readonly IEmployeeRepository _employeeRepository;
 
-    public EmployeeService(IRepository<Employee> employeeRepository) : base(employeeRepository)
+    public EmployeeService(IEmployeeRepository employeeRepository) : base(employeeRepository)
     {
         _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
     }
@@ -21,5 +21,13 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
     public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
         return _employeeRepository.FindAsync(employee => employee.CompanyId == companyId, cancellationToken);
+    }
+
+    public Task<Employee?> GetEmployeeByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email cannot be null or whitespace.", nameof(email));
+
+        return _employeeRepository.GetByEmailAsync(email, cancellationToken);
     }
 }

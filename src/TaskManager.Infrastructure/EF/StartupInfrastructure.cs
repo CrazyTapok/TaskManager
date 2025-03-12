@@ -11,15 +11,18 @@ public static class StartupInfrastructure
 {
     public static void AddDbContextInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
         services.AddDbContext<DBContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(connectionString));
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>)); 
         
-        services.AddScoped<IRepository<Employee>, EmployeeRepository>(); 
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>(); 
         services.AddScoped<IRepository<Project>, ProjectRepository>(); 
         services.AddScoped<IRepository<Core.Models.Task>, TaskRepository>();
-
+      
         services.AddHealthChecks()
                    .AddDbContextCheck<DBContext>();
     }
