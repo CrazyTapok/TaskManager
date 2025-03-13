@@ -15,6 +15,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     private readonly IEmployeeService _employeeService = employeeService;
     private readonly ITaskService _taskService = taskService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -64,6 +65,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("projects/{projectId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
@@ -73,6 +75,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("projects/{projectId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
@@ -82,6 +85,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<ProjectResponse>>> ListAllProjectsAsync(CancellationToken cancellationToken = default)
     {

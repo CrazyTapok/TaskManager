@@ -4,8 +4,6 @@ using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.Core.Interfaces.Services;
-using TaskManager.Core.Models;
-using TaskManager.Core.Utilities;
 
 namespace TaskManager.API.Controllers;
 
@@ -17,6 +15,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     private readonly IProjectService _projectService = projectService;
     private readonly ITaskService _taskService = taskService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -81,6 +80,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("employees/{employeeId:guid}/projects")]
     public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
@@ -90,6 +90,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("employees/{employeeId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
@@ -99,6 +100,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<EmployeeResponse>>> ListAllEmployeesAsync(CancellationToken cancellationToken = default)
     {

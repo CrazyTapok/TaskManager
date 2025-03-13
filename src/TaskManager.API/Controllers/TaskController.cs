@@ -13,6 +13,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
 {
     private readonly ITaskService _taskService = taskService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TaskResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -39,7 +40,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return CreatedAtAction(nameof(GetByIdAsync), new { id = response.Id }, response);
     }
 
-    [Authorize(Roles = "Admin,ProjectManager")]
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
@@ -62,6 +63,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<TaskResponse>>> ListAllTasksAsync(CancellationToken cancellationToken = default)
     {

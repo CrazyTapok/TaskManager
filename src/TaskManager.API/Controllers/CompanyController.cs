@@ -15,6 +15,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
     private readonly IService<Company> _companyService = companyService;
     private readonly IEmployeeService _employeeService = employeeService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CompanyResponse>> GetCompanyByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
