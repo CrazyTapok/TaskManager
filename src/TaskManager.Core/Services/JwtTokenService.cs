@@ -1,16 +1,22 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TaskManager.Core.Infrastructure.Configuration;
 using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-internal class JwtTokenService(IConfiguration configuration) : IJwtTokenService
+internal class JwtTokenService : IJwtTokenService
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly JwtSettings _jwtSettings;
+
+    public JwtTokenService(IOptions<JwtSettings> jwtSettings)
+    {
+        _jwtSettings = jwtSettings.Value;
+    }
 
     public string GenerateToken(Employee employee)
     {
@@ -22,12 +28,12 @@ internal class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             new Claim(ClaimTypes.Role, employee.Role.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_KEY"] ?? string.Empty));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            _configuration["JWT_ISSUER"],
-            _configuration["JWT_AUDIENCE"],
+            _jwtSettings.Issuer,
+            _jwtSettings.Audience,
             claims,
             expires: DateTime.Now.AddHours(1),
             signingCredentials: creds

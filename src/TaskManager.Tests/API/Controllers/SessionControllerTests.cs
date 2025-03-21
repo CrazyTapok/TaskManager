@@ -8,17 +8,17 @@ using TaskManager.Core.Interfaces.Services;
 
 namespace TaskManager.Tests.API.Controllers;
 
-public class SessionsControllerTests
+public class SessionControllerTests
 {
     private readonly Mock<IAuthService> _mockAuthService;
-    private readonly SessionsController _controller;
+    private readonly SessionController _controller;
     private readonly Fixture _fixture;
     private readonly CancellationToken _cancellationToken;
 
-    public SessionsControllerTests()
+    public SessionControllerTests()
     {
         _mockAuthService = new Mock<IAuthService>();
-        _controller = new SessionsController(_mockAuthService.Object);
+        _controller = new SessionController(_mockAuthService.Object);
         _fixture = new Fixture();
         _cancellationToken = new CancellationToken();
 

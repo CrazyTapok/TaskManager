@@ -5,7 +5,7 @@ using TaskManager.Core.Utilities;
 
 namespace TaskManager.Core.Services;
 
-internal class EmployeeService : Service<Employee>, IEmployeeService 
+internal class EmployeeService : Service<Employee>, IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
 
@@ -16,21 +16,22 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
 
     public async Task<Employee?> RegisterAsync(Employee employee, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(employee.Email))
-            throw new ArgumentException("Email cannot be null or whitespace.", nameof(employee.Email));
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(employee.Email, nameof(employee.Email));
 
         var existingEmployee = await _employeeRepository.GetByEmailAsync(employee.Email, cancellationToken);
         if (existingEmployee != null)
+        {
             throw new InvalidOperationException("A user with this email already exists.");
+        }
 
         employee.Password = PasswordHelper.HashPassword(employee.Password);
 
         return await _employeeRepository.AddAsync(employee, cancellationToken);
     }
 
-    public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default) 
+    public Task<List<Employee>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        return _employeeRepository.FindAsync(employee => employee.Projects.Any(project => project.Id == projectId), cancellationToken); 
+        return _employeeRepository.FindAsync(employee => employee.Projects.Any(project => project.Id == projectId), cancellationToken);
     }
 
     public Task<List<Employee>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
@@ -40,9 +41,7 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
 
     public Task<Employee?> GetEmployeeByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            throw new ArgumentException("Email cannot be null or whitespace.", nameof(email));
-
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(email, nameof(email));
         return _employeeRepository.GetByEmailAsync(email, cancellationToken);
     }
 }

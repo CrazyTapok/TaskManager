@@ -9,7 +9,7 @@ using TaskManager.Core.Models;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/companies")]
 public class CompanyController(IService<Company> companyService, IEmployeeService employeeService) : ControllerBase
 {
     private readonly IService<Company> _companyService = companyService;
@@ -66,7 +66,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
     }
 
     [Authorize(Roles = "Admin,ProjectManager")]
-    [HttpGet("companies/{companyId:guid}/employees")]
+    [HttpGet("{companyId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId, cancellationToken);

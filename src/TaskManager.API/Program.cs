@@ -8,6 +8,7 @@ using System.Text;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
+using TaskManager.Core.Infrastructure.Configuration;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,21 +40,25 @@ builder.Services.AddServiceModule();
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration.GetSection("JWT").Get<JwtSettings>();
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JWT_ISSUER"],
-        ValidAudience = builder.Configuration["JWT_AUDIENCE"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT_KEY"]))
+        ValidIssuer = jwtSettings?.Issuer,
+        ValidAudience = jwtSettings?.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key ?? string.Empty))
     };
 });
 

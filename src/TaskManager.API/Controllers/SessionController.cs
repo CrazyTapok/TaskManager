@@ -6,8 +6,8 @@ using TaskManager.Core.Interfaces.Services;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class SessionsController(IAuthService authService) : ControllerBase
+[Route("api/sessions")]
+public class SessionController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
 

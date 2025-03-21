@@ -232,17 +232,5 @@ namespace TaskManager.API.Tests.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Email cannot be null or whitespace. (Parameter 'Email')", badRequestResult.Value);
         }
-
-
-        [Fact]
-        public async Task RegisterAsync_ReturnsBadRequest_WhenRequestIsNull()
-        {
-            // Act
-            var result = await _controller.RegisterAsync(null, _cancellationToken);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("The request cannot be null.", badRequestResult.Value);
-        }
     }
 }

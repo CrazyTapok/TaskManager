@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using Moq;
+using System;
 using System.Linq.Expressions;
 using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
@@ -96,19 +97,24 @@ public class EmployeeServiceTests
         Assert.Equal(email, result!.Email);
     }
 
-    [Fact]
-    public async Task GetEmployeeByEmailAsync_ThrowsArgumentException_WhenEmailIsNullOrWhitespace()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task GetEmployeeByEmailAsync_ThrowsException_WhenEmailIsNullOrWhitespace(string invalidEmail)
     {
-        // Arrange
-        var invalidEmails = new[] { null, "", " " };
-
-        foreach (var email in invalidEmails)
+        // Act & Assert
+        if (invalidEmail == null)
         {
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                _service.GetEmployeeByEmailAsync(email!, _cancellationToken));
-
-            Assert.Equal("Email cannot be null or whitespace. (Parameter 'email')", exception.Message);
+            var nullException = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                _service.GetEmployeeByEmailAsync(invalidEmail!, _cancellationToken));
+            Assert.Equal("Value cannot be null. (Parameter 'email')", nullException.Message);
+        }
+        else
+        {
+            var argumentException = await Assert.ThrowsAsync<ArgumentException>(() =>
+                _service.GetEmployeeByEmailAsync(invalidEmail, _cancellationToken));
+            Assert.Equal("The value cannot be an empty string or composed entirely of whitespace. (Parameter 'email')", argumentException.Message);
         }
     }
 

@@ -8,7 +8,7 @@ using TaskManager.Core.Interfaces.Services;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/tasks")]
 public class TaskController(ITaskService taskService) : ControllerBase
 {
     private readonly ITaskService _taskService = taskService;

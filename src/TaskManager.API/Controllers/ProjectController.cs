@@ -8,7 +8,7 @@ using TaskManager.Core.Interfaces.Services;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/projects")]
 public class ProjectController(IProjectService projectService, IEmployeeService employeeService, ITaskService taskService) : ControllerBase
 {
     private readonly IProjectService _projectService = projectService;
@@ -66,7 +66,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     }
 
     [Authorize(Roles = "Admin,ProjectManager,Developer")]
-    [HttpGet("projects/{projectId:guid}/employees")]
+    [HttpGet("{projectId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
@@ -76,7 +76,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     }
 
     [Authorize(Roles = "Admin,ProjectManager,Developer")]
-    [HttpGet("projects/{projectId:guid}/tasks")]
+    [HttpGet("{projectId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
