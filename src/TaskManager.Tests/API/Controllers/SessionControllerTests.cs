@@ -28,16 +28,6 @@ public class SessionControllerTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
     }
 
-    [Fact]
-    public async Task LoginAsync_ShouldReturnBadRequest_WhenRequestIsNull()
-    {
-        // Act
-        var result = await _controller.LoginAsync(null, _cancellationToken);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Request cannot be null.", badRequestResult.Value);
-    }
 
     [Fact]
     public async Task LoginAsync_ShouldReturnUnauthorized_WhenAuthenticationFails()

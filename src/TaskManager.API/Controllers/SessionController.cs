@@ -14,11 +14,6 @@ public class SessionController(IAuthService authService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            return BadRequest("Request cannot be null.");
-        }
-
         try
         {
             var token = await _authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);

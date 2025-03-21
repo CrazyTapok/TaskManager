@@ -33,11 +33,6 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     [HttpPost]
     public async Task<IActionResult> RegisterAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        if (request == null)
-        {
-            return BadRequest("The request cannot be null.");
-        }
-
         try
         {
             var employee = request.ToEmployee();
