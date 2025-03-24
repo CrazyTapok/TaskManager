@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -7,13 +8,14 @@ using TaskManager.Core.Interfaces.Services;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/employees")]
 public class EmployeeController(IEmployeeService employeeService, IProjectService projectService, ITaskService taskService) : ControllerBase
 {
     private readonly IEmployeeService _employeeService = employeeService;
     private readonly IProjectService _projectService = projectService;
     private readonly ITaskService _taskService = taskService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -29,16 +31,28 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     }
 
     [HttpPost]
-    public async Task<ActionResult<EmployeeResponse>> AddEmployeeAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RegisterAsync([FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
-        var employee = request.ToEmployee();
-        var createdEmployee = await _employeeService.AddAsync(employee, cancellationToken);
-        
-        var response = createdEmployee.MapToEmployeeResponse();
+        try
+        {
+            var employee = request.ToEmployee();
+            var createdEmployee = await _employeeService.RegisterAsync(employee, cancellationToken);
 
-        return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);
+            var response = createdEmployee.MapToEmployeeResponse();
+
+            return CreatedAtAction(nameof(GetEmployeeByIdAsync), new { id = response.Id }, response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
@@ -53,6 +67,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteEmployeeAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -60,7 +75,8 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return NoContent();
     }
 
-    [HttpGet("employees/{employeeId:guid}/projects")]
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
+    [HttpGet("{employeeId:guid}/projects")]
     public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
         var projects = await _projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
@@ -69,7 +85,8 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return Ok(response);
     }
 
-    [HttpGet("employees/{employeeId:guid}/tasks")]
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
+    [HttpGet("{employeeId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
@@ -78,6 +95,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<EmployeeResponse>>> ListAllEmployeesAsync(CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -7,13 +8,14 @@ using TaskManager.Core.Interfaces.Services;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/projects")]
 public class ProjectController(IProjectService projectService, IEmployeeService employeeService, ITaskService taskService) : ControllerBase
 {
     private readonly IProjectService _projectService = projectService;
     private readonly IEmployeeService _employeeService = employeeService;
     private readonly ITaskService _taskService = taskService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -28,6 +30,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> AddProjectAsync([FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
@@ -39,6 +42,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return CreatedAtAction(nameof(GetProjectByIdAsync), new { id = response.Id }, response);
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateProjectAsync(Guid id, [FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
@@ -53,6 +57,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,ProjectManager")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteProjectAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -60,7 +65,8 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return NoContent();
     }
 
-    [HttpGet("projects/{projectId:guid}/employees")]
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
+    [HttpGet("{projectId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
@@ -69,7 +75,8 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
-    [HttpGet("projects/{projectId:guid}/tasks")]
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
+    [HttpGet("{projectId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
         var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
@@ -78,6 +85,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<ProjectResponse>>> ListAllProjectsAsync(CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
@@ -8,12 +9,13 @@ using TaskManager.Core.Models;
 namespace TaskManager.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/companies")]
 public class CompanyController(IService<Company> companyService, IEmployeeService employeeService) : ControllerBase
 {
     private readonly IService<Company> _companyService = companyService;
     private readonly IEmployeeService _employeeService = employeeService;
 
+    [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CompanyResponse>> GetCompanyByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -28,6 +30,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<CompanyResponse>> AddCompanyAsync([FromBody] CompanyRequest request, CancellationToken cancellationToken = default)
     {
@@ -39,6 +42,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
         return CreatedAtAction(nameof(GetCompanyByIdAsync), new { id = response.Id }, response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateCompanyAsync(Guid id, [FromBody] CompanyRequest request, CancellationToken cancellationToken = default)
     {
@@ -53,6 +57,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteCompanyAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -60,7 +65,8 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
         return NoContent();
     }
 
-    [HttpGet("companies/{companyId:guid}/employees")]
+    [Authorize(Roles = "Admin,ProjectManager")]
+    [HttpGet("{companyId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId, cancellationToken);
@@ -69,6 +75,7 @@ public class CompanyController(IService<Company> companyService, IEmployeeServic
         return Ok(response);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<CompanyResponse>>> ListAllCompaniesAsync(CancellationToken cancellationToken = default)
     {

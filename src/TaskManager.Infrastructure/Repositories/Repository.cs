@@ -53,7 +53,7 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
         }
     }
 
-    public Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
+    public virtual Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
         return _dbSet.Where(predicate).ToListAsync(cancellationToken);
     }

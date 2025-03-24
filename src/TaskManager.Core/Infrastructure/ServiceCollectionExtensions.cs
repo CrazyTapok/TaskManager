@@ -12,7 +12,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeService, EmployeeService>(); 
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<ITaskService, TaskService>();
-        services.AddScoped<IService<Company>, Service<Company>>(); 
+        services.AddScoped<IService<Company>, Service<Company>>();
+        
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
