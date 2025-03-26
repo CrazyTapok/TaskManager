@@ -1,6 +1,5 @@
 ﻿using AutoFixture;
 using Moq;
-using System;
 using System.Linq.Expressions;
 using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
@@ -44,7 +43,7 @@ public class EmployeeServiceTests
         };
 
         _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>(), _cancellationToken))
-            .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => employees.Where(predicate.Compile()).ToList());
+            .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => [.. employees.Where(predicate.Compile())]);
 
         // Act
         var result = await _service.GetEmployeesByProjectIdAsync(projectId, _cancellationToken);
@@ -69,7 +68,7 @@ public class EmployeeServiceTests
         };
 
         _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>(), _cancellationToken))
-            .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => employees.Where(predicate.Compile()).ToList());
+            .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => [.. employees.Where(predicate.Compile())]);
 
         // Act
         var result = await _service.GetEmployeesByCompanyIdAsync(companyId, _cancellationToken);
@@ -139,15 +138,15 @@ public class EmployeeServiceTests
         // Arrange
         var originalPassword = _fixture.Create<string>();
         var employee = _fixture.Build<Employee>()
-            .With(e => e.Email, "test007@example.com")
-            .With(e => e.Password, originalPassword)
+            .With(employee => employee.Email, "test007@example.com")
+            .With(employee => employee.Password, originalPassword)
             .Create();
 
         _mockRepo.Setup(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken))
             .ReturnsAsync((Employee?)null);
 
         _mockRepo.Setup(repo => repo.AddAsync(It.IsAny<Employee>(), _cancellationToken))
-            .ReturnsAsync((Employee e, CancellationToken _) => e);
+            .ReturnsAsync((Employee employee, CancellationToken _) => employee);
 
         // Act
         var result = await _service.RegisterAsync(employee, _cancellationToken);
@@ -161,14 +160,14 @@ public class EmployeeServiceTests
         Assert.True(PasswordHelper.VerifyPassword(originalPassword, result.Password));
 
         _mockRepo.Verify(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken), Times.Once);
-        _mockRepo.Verify(repo => repo.AddAsync(It.Is<Employee>(e => e.Password != originalPassword && PasswordHelper.VerifyPassword(originalPassword, e.Password)), _cancellationToken), Times.Once);
+        _mockRepo.Verify(repo => repo.AddAsync(It.Is<Employee>(employee => employee.Password != originalPassword && PasswordHelper.VerifyPassword(originalPassword, employee.Password)), _cancellationToken), Times.Once);
     }
 
     [Fact]
     public async Task RegisterAsync_ThrowsInvalidOperationException_WhenEmployeeAlreadyExists()
     {
         // Arrange
-        var employee = _fixture.Build<Employee>().With(e => e.Email, "test007@example.com").Create();
+        var employee = _fixture.Build<Employee>().With(employee => employee.Email, "test007@example.com").Create();
         _mockRepo.Setup(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken))
             .ReturnsAsync(employee);
 

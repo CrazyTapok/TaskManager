@@ -8,7 +8,7 @@ using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskManager.API.Tests.Controllers;
+namespace TaskManager.Tests.API.Controllers;
 
 public class ProjectControllerTests
 {
@@ -136,7 +136,7 @@ public class ProjectControllerTests
         // Arrange
         var expectedCount = 2;
         var projectId = Guid.NewGuid();
-        var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
+        var tasks = _fixture.CreateMany<TaskManager.Core.Models.Task>(expectedCount).ToList();
         _mockTaskService.Setup(service => service.GetTasksByProjectIdAsync(projectId, _cancellationToken))
                         .ReturnsAsync(tasks);
 

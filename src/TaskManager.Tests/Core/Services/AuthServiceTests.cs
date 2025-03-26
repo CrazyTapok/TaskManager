@@ -79,7 +79,7 @@ public class AuthServiceTests
         // Arrange
         var email = _fixture.Create<string>();
         var password = _fixture.Create<string>();
-        var employee = _fixture.Build<Employee>().With(e => e.Password, PasswordHelper.HashPassword("correctPassword")).Create();
+        var employee = _fixture.Build<Employee>().With(employee => employee.Password, PasswordHelper.HashPassword("correctPassword")).Create();
 
         _mockEmployeeService.Setup(service => service.GetEmployeeByEmailAsync(email, _cancellationToken))
             .ReturnsAsync(employee);

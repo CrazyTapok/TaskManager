@@ -42,7 +42,7 @@ public class ProjectServiceTests
         };
 
         _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Project, bool>>>(), _cancellationToken))
-            .ReturnsAsync((Expression<Func<Project, bool>> predicate, CancellationToken token) => projects.Where(predicate.Compile()).ToList());
+            .ReturnsAsync((Expression<Func<Project, bool>> predicate, CancellationToken token) => [.. projects.Where(predicate.Compile())]);
 
         // Act
         var result = await _service.GetProjectsByEmployeeIdAsync(employeeId, _cancellationToken);

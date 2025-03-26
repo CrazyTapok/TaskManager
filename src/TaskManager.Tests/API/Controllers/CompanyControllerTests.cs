@@ -8,7 +8,7 @@ using TaskManager.Core.Interfaces.Services;
 using TaskManager.Core.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskManager.API.Tests.Controllers;
+namespace TaskManager.Tests.API.Controllers;
 
 public class CompanyControllerTests
 {

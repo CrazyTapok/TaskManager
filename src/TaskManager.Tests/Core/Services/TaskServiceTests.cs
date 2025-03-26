@@ -39,7 +39,7 @@ public class TaskServiceTests
         };
 
         _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<TaskManager.Core.Models.Task, bool>>>(), _cancellationToken))
-           .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => tasks.Where(predicate.Compile()).ToList());
+           .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => [.. tasks.Where(predicate.Compile())]);
 
         // Act
         var result = await _service.GetTasksByProjectIdAsync(projectId, _cancellationToken);
@@ -63,7 +63,7 @@ public class TaskServiceTests
         };
 
         _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<TaskManager.Core.Models.Task, bool>>>(), _cancellationToken))
-             .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => tasks.Where(predicate.Compile()).ToList());
+             .ReturnsAsync((Expression<Func<TaskManager.Core.Models.Task, bool>> predicate, CancellationToken token) => [.. tasks.Where(predicate.Compile())]);
 
         // Act
         var result = await _service.GetTasksByEmployeeIdAsync(employeeId, _cancellationToken);

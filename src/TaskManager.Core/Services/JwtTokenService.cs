@@ -9,14 +9,9 @@ using TaskManager.Core.Models;
 
 namespace TaskManager.Core.Services;
 
-internal class JwtTokenService : IJwtTokenService
+internal class JwtTokenService(IOptions<JwtSettings> jwtSettings) : IJwtTokenService
 {
-    private readonly JwtSettings _jwtSettings;
-
-    public JwtTokenService(IOptions<JwtSettings> jwtSettings)
-    {
-        _jwtSettings = jwtSettings.Value;
-    }
+    private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
     public string GenerateToken(Employee employee)
     {

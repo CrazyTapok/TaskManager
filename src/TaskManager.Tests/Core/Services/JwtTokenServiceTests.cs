@@ -23,12 +23,10 @@ public class JwtTokenServiceTests
     {
         _fixture = new Fixture();
 
-        // Удаляем ThrowingRecursionBehavior и добавляем OmitOnRecursionBehavior для обработки рекурсивных моделей
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+            .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        // Мокируем JwtSettings через IOptions
         _mockJwtSettings = new Mock<IOptions<JwtSettings>>();
         _mockJwtSettings.Setup(settings => settings.Value).Returns(new JwtSettings
         {
@@ -37,21 +35,19 @@ public class JwtTokenServiceTests
             Audience = "https://myaudience.com"
         });
 
-        // Передаем IOptions в JwtTokenService
         _jwtTokenService = new JwtTokenService(_mockJwtSettings.Object);
     }
 
     [Fact]
     public void GenerateToken_ShouldReturnValidJwtToken()
     {
-        // Настраиваем Employee с нужными параметрами
-        _fixture.Customize<Employee>(c => c.With(e => e.Role, Role.Admin));
+        _fixture.Customize<Employee>(employee => employee.With(employee => employee.Role, Role.Admin));
 
         // Arrange
         var employee = _fixture.Build<Employee>()
-            .With(e => e.Id, Guid.NewGuid())
-            .With(e => e.Name, _fixture.Create<string>())
-            .With(e => e.Email, "test@example.com")
+            .With(employee => employee.Id, Guid.NewGuid())
+            .With(employee => employee.Name, _fixture.Create<string>())
+            .With(employee => employee.Email, "test@example.com")
             .Create();
 
         // Act
@@ -79,9 +75,9 @@ public class JwtTokenServiceTests
 
         var jwtToken = (JwtSecurityToken)validatedToken;
 
-        Assert.Equal(employee.Id.ToString(), jwtToken.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
-        Assert.Equal(employee.Name, jwtToken.Claims.First(c => c.Type == ClaimTypes.Name).Value);
-        Assert.Equal(employee.Email, jwtToken.Claims.First(c => c.Type == ClaimTypes.Email).Value);
-        Assert.Equal(employee.Role.ToString(), jwtToken.Claims.First(c => c.Type == ClaimTypes.Role).Value);
+        Assert.Equal(employee.Id.ToString(), jwtToken.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.Sub).Value);
+        Assert.Equal(employee.Name, jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Name).Value);
+        Assert.Equal(employee.Email, jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Email).Value);
+        Assert.Equal(employee.Role.ToString(), jwtToken.Claims.First(claim => claim.Type == ClaimTypes.Role).Value);
     }
 }

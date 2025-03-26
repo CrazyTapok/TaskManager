@@ -17,6 +17,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
 
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<INotificationSchedulerService, NotificationSchedulerService>();
+
         return services;
     }
 }
