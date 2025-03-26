@@ -20,7 +20,9 @@ public class EmailNotificationRequestValidator : AbstractValidator<EmailNotifica
 
         RuleFor(request => request.CronExpression)
             .NotEmpty()
-            .Matches(@"^(?:\d+|\*|\?|\w+)$").WithMessage("Invalid cron expression format.");
+            .Matches(@"^([\d\*/,-]+)\s([\d\*/,-]+)\s([\d\*/,-]+|\?)\s([\d\*/,-]+)\s([\d\*/,-]+|\?)\s([\d\*/,-]+|\?)?$")
+            .WithMessage("Invalid cron expression format.");
+
 
         RuleFor(request => request.CreatedByName)
             .NotEmpty()
