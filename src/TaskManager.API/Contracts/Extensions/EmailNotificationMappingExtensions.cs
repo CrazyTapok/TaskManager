@@ -9,13 +9,9 @@ public static class EmailNotificationMappingExtensions
     {
         return new EmailNotification
         {
-            JobId = Guid.NewGuid().ToString(),
-            EmailList = request.EmailList,
             Subject = request.Subject,
-            Body = request.Body,
-            CronExpression = request.CronExpression,
-            CreatedByName = request.CreatedByName,
-            CreatedByEmail = request.CreatedByEmail
+            RecipientName = request.RecipientName,
+            RecipientEmail = request.RecipientEmail
         };
     }
 }

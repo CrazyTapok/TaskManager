@@ -43,6 +43,8 @@ CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SMTP"));
+builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("NOTIFICATION"));
 
 builder.Services.AddAuthentication(options =>
 {

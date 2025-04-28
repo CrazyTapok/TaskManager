@@ -1,42 +1,36 @@
-﻿using MailKit.Net.Smtp;
-using MimeKit;
+﻿using MimeKit;
 using MailKit.Security;
 using TaskManager.Core.Models;
 using Task = System.Threading.Tasks.Task;
 using TaskManager.Core.Interfaces.Services;
+using Microsoft.Extensions.Options;
+using TaskManager.Core.Infrastructure.Configuration;
+using ISmtpClient = TaskManager.Core.Interfaces.Services.ISmtpClient;
 
 namespace TaskManager.Core.Services;
 
-internal class EmailService : IEmailService
+internal class EmailService(IOptions<SmtpSettings> smtpSettings, ISmtpClient smtpClient) : IEmailService
 {
-    private readonly string _smtpUser;
-    private readonly string _smtpPassword;
+    private readonly SmtpSettings _smtpSettings = smtpSettings?.Value ?? throw new ArgumentNullException(nameof(smtpSettings));
+    private readonly ISmtpClient _smtpClient = smtpClient ?? throw new ArgumentNullException(nameof(smtpClient));
 
-    public EmailService()
+    public async Task SendEmailAsync(Guid id, EmailNotification emailNotification, CancellationToken cancellationToken = default)
     {
-        _smtpUser = Environment.GetEnvironmentVariable("SMTP_USER") ?? throw new ArgumentNullException(nameof(_smtpUser));
-        _smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new ArgumentNullException(nameof(_smtpPassword));
-    }
+        await _smtpClient.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, SecureSocketOptions.StartTls, cancellationToken);
+        await _smtpClient.AuthenticateAsync(_smtpSettings.User, _smtpSettings.Password, cancellationToken);
 
-    public async Task SendEmailAsync(EmailNotification emailNotification)
-    {
-        using var client = new SmtpClient();
-        await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(_smtpUser, _smtpPassword);
-
-        foreach (var recipientEmail in emailNotification.EmailList)
+        var message = new MimeMessage
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(emailNotification.CreatedByName, emailNotification.CreatedByEmail));
-            message.To.Add(new MailboxAddress("", recipientEmail));
-            message.Subject = emailNotification.Subject;
+            Subject = emailNotification.Subject
+        };
 
-            var builder = new BodyBuilder { HtmlBody = emailNotification.Body };
-            message.Body = builder.ToMessageBody();
+        message.From.Add(new MailboxAddress("Task Manager App", _smtpSettings.User));
+        message.To.Add(new MailboxAddress(emailNotification.RecipientName, emailNotification.RecipientEmail));
 
-            await client.SendAsync(message);
-        }
+        var builder = new BodyBuilder { HtmlBody = emailNotification.Body };
+        message.Body = builder.ToMessageBody();
 
-        await client.DisconnectAsync(true);
+        await _smtpClient.SendAsync(message, cancellationToken);
+        await _smtpClient.DisconnectAsync(true, cancellationToken);
     }
 }

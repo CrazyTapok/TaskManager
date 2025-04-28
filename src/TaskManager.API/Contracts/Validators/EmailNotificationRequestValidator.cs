@@ -7,28 +7,14 @@ public class EmailNotificationRequestValidator : AbstractValidator<EmailNotifica
 {
     public EmailNotificationRequestValidator()
     {
-        RuleFor(request => request.EmailList)
-            .NotEmpty()
-            .Must(list => list.All(email => !string.IsNullOrWhiteSpace(email))).WithMessage("Email list contains invalid emails.");
-
         RuleFor(request => request.Subject)
-            .NotEmpty()
             .MaximumLength(140);
 
-        RuleFor(request => request.Body)
-            .NotEmpty();
-
-        RuleFor(request => request.CronExpression)
-            .NotEmpty()
-            .Matches(@"^([\d\*/,-]+)\s([\d\*/,-]+)\s([\d\*/,-]+|\?)\s([\d\*/,-]+)\s([\d\*/,-]+|\?)\s([\d\*/,-]+|\?)?$")
-            .WithMessage("Invalid cron expression format.");
-
-
-        RuleFor(request => request.CreatedByName)
+        RuleFor(request => request.RecipientName)
             .NotEmpty()
             .MaximumLength(70);
 
-        RuleFor(request => request.CreatedByEmail)
+        RuleFor(request => request.RecipientEmail)
             .NotEmpty()
             .EmailAddress();
     }

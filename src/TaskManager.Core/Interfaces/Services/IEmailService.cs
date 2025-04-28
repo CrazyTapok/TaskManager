@@ -5,6 +5,6 @@ namespace TaskManager.Core.Interfaces.Services;
 
 public interface IEmailService
 {
-    Task SendEmailAsync(EmailNotification emailNotification);
+    Task SendEmailAsync(Guid Id, EmailNotification emailNotification, CancellationToken cancellationToken = default);
 }
 
