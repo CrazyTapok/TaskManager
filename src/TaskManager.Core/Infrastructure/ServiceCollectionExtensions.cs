@@ -17,11 +17,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
 
-        services.AddScoped<ISmtpClient, SmtpClientWrapper>();
+        services.AddScoped<ISmtpClientWrapper, SmtpClientWrapper>();
+        services.AddSingleton<IJobSchedulerWrapper, JobSchedulerWrapper>();
 
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IProjectNotificationService, ProjectNotificationService>();
         services.AddScoped<IProjectReportService, ProjectReportService>();
+        services.AddScoped<INewsletterReportService, NewsletterReportService>();
+        services.AddScoped<IDailyNewsletterSchedulerService, DailyNewsletterSchedulerService>();
+        
 
         return services;
     }

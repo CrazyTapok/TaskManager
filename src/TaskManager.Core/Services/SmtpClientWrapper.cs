@@ -1,11 +1,11 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using ISmtpClient = TaskManager.Core.Interfaces.Services.ISmtpClient;
+using ISmtpClientWrapper = TaskManager.Core.Interfaces.Services.ISmtpClientWrapper;
 
 namespace TaskManager.Core.Services;
 
-internal class SmtpClientWrapper : ISmtpClient
+internal class SmtpClientWrapper : ISmtpClientWrapper
 {
     private readonly SmtpClient _smtpClient = new();
 

@@ -50,5 +50,9 @@ internal class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(t => t.IsDeleted)
             .IsRequired()
             .HasDefaultValue(false);
+
+        builder.Property(t => t.IsDailyNewsletterEnabled)
+          .IsRequired()
+          .HasDefaultValue(false);
     }
 }

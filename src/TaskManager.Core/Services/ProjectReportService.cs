@@ -3,9 +3,14 @@ using TaskManager.Core.Interfaces.Services;
 
 namespace TaskManager.Core.Services;
 
-internal class ProjectReportService(ITaskService taskService) : IProjectReportService
+internal class ProjectReportService : IProjectReportService
 {
-    private readonly ITaskService _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+    private readonly ITaskService _taskService;
+
+    public ProjectReportService(ITaskService taskService)
+    {
+        _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+    }
 
     public async Task<string> GenerateProjectReportAsync(Guid projectId, CancellationToken cancellationToken = default)
     {

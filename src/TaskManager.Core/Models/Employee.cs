@@ -22,4 +22,6 @@ public class Employee : BaseEntity
     public List<Task> AssignedTasks { get; set; }
 
     public Role Role { get; set; }
+
+    public bool IsDailyNewsletterEnabled { get; set; }
 }

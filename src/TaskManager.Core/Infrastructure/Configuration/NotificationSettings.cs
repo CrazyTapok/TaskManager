@@ -2,6 +2,6 @@
 
 public class NotificationSettings
 {
-    public int Hour { get; set; }
-    public int Minute { get; set; }
+    public static readonly string SectionName = "NOTIFICATION";
+    public TimeSpan NotificationTime { get; set; }
 }

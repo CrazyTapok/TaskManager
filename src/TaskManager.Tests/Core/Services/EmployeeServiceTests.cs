@@ -179,4 +179,28 @@ public class EmployeeServiceTests
         _mockRepo.Verify(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken), Times.Once);
         _mockRepo.Verify(repo => repo.AddAsync(It.IsAny<Employee>(), _cancellationToken), Times.Never);
     }
+
+    [Fact]
+    public async Task GetEmployeesWithDailyNewsletterEnabledAsync_ReturnsCorrectEmployees()
+    {
+        // Arrange
+        var expectedCount = 2;
+        var employees = new List<Employee>
+        {
+            _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, true).Create(),
+            _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, true).Create(),
+            _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, false).Create()
+        };
+
+        _mockRepo.Setup(repo => repo.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>(), _cancellationToken))
+            .ReturnsAsync((Expression<Func<Employee, bool>> predicate, CancellationToken token) => employees.Where(predicate.Compile()).ToList());
+
+        // Act
+        var result = await _service.GetEmployeesWithDailyNewsletterEnabledAsync(_cancellationToken);
+
+        // Assert
+        Assert.Equal(expectedCount, result.Count);
+        Assert.All(result, employee => Assert.True(employee.IsDailyNewsletterEnabled));
+    }
+
 }

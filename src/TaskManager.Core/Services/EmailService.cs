@@ -5,16 +5,22 @@ using Task = System.Threading.Tasks.Task;
 using TaskManager.Core.Interfaces.Services;
 using Microsoft.Extensions.Options;
 using TaskManager.Core.Infrastructure.Configuration;
-using ISmtpClient = TaskManager.Core.Interfaces.Services.ISmtpClient;
+using ISmtpClientWrapper = TaskManager.Core.Interfaces.Services.ISmtpClientWrapper;
 
 namespace TaskManager.Core.Services;
 
-internal class EmailService(IOptions<SmtpSettings> smtpSettings, ISmtpClient smtpClient) : IEmailService
+internal class EmailService : IEmailService
 {
-    private readonly SmtpSettings _smtpSettings = smtpSettings?.Value ?? throw new ArgumentNullException(nameof(smtpSettings));
-    private readonly ISmtpClient _smtpClient = smtpClient ?? throw new ArgumentNullException(nameof(smtpClient));
+    private readonly SmtpSettings _smtpSettings;
+    private readonly ISmtpClientWrapper _smtpClient;
 
-    public async Task SendEmailAsync(Guid id, EmailNotification emailNotification, CancellationToken cancellationToken = default)
+    public EmailService(IOptions<SmtpSettings> smtpSettings, ISmtpClientWrapper smtpClient)
+    {
+        _smtpSettings = smtpSettings?.Value ?? throw new ArgumentNullException(nameof(smtpSettings));
+        _smtpClient = smtpClient ?? throw new ArgumentNullException(nameof(smtpClient));
+    }
+
+    public async Task SendEmailAsync(EmailNotification emailNotification, CancellationToken cancellationToken = default)
     {
         await _smtpClient.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, SecureSocketOptions.StartTls, cancellationToken);
         await _smtpClient.AuthenticateAsync(_smtpSettings.User, _smtpSettings.Password, cancellationToken);
@@ -31,6 +37,6 @@ internal class EmailService(IOptions<SmtpSettings> smtpSettings, ISmtpClient smt
         message.Body = builder.ToMessageBody();
 
         await _smtpClient.SendAsync(message, cancellationToken);
-        await _smtpClient.DisconnectAsync(true, cancellationToken);
+        await _smtpClient.DisconnectAsync(quit: true, cancellationToken);
     }
 }

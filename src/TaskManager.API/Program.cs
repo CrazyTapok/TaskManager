@@ -11,6 +11,7 @@ using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
 using TaskManager.Core.Infrastructure.Configuration;
+using TaskManager.Core.Interfaces.Services;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,9 +43,9 @@ builder.Services.AddServiceModule();
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SMTP"));
-builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection("NOTIFICATION"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSettings.SectionName));
+builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -67,21 +68,23 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddHangfire(config => config
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"),
         new SqlServerStorageOptions
         {
-            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            QueuePollInterval = TimeSpan.Zero,
-            UseRecommendedIsolationLevel = true,
-            DisableGlobalLocks = true
+            PrepareSchemaIfNecessary = true,
+            QueuePollInterval = TimeSpan.FromSeconds(15)
         }));
+
 builder.Services.AddHangfireServer();
 
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var jobScheduler = scope.ServiceProvider.GetRequiredService<IDailyNewsletterSchedulerService>();
+    jobScheduler.ConfigureJobs();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

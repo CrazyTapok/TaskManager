@@ -3,7 +3,7 @@ using MimeKit;
 
 namespace TaskManager.Core.Interfaces.Services;
 
-public interface ISmtpClient : IDisposable
+public interface ISmtpClientWrapper : IDisposable
 {
     Task ConnectAsync(string host, int port, SecureSocketOptions options, CancellationToken cancellationToken = default);
     Task AuthenticateAsync(string user, string password, CancellationToken cancellationToken = default);

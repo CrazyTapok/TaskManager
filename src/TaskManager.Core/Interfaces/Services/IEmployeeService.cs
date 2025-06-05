@@ -11,4 +11,6 @@ public interface IEmployeeService : IService<Employee>
     Task<Employee?> GetEmployeeByEmailAsync(string email, CancellationToken cancellationToken);
 
     Task<Employee?> RegisterAsync(Employee employee, CancellationToken cancellationToken);
+
+    Task<List<Employee>> GetEmployeesWithDailyNewsletterEnabledAsync(CancellationToken cancellationToken = default);
 }

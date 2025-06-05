@@ -44,4 +44,9 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
         ArgumentNullException.ThrowIfNullOrWhiteSpace(email, nameof(email));
         return _employeeRepository.GetByEmailAsync(email, cancellationToken);
     }
+
+    public Task<List<Employee>> GetEmployeesWithDailyNewsletterEnabledAsync(CancellationToken cancellationToken = default)
+    {
+        return _employeeRepository.FindAsync(employee => employee.IsDailyNewsletterEnabled, cancellationToken);
+    }
 }
