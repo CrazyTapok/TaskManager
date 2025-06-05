@@ -25,9 +25,9 @@ internal class DailyNewsletterSchedulerService : IDailyNewsletterSchedulerServic
         var minutes = _notificationSettings.NotificationTime.Minutes;
 
         _jobSchedulerWrapper.ScheduleJob(
-            "daily-newsletter-job",
+            jobId: "daily-newsletter-job",
             () => _newsletterReportService.ExecuteDailyJob(default),
-            Cron.Daily(hours, minutes));
+            cronExpression: Cron.Daily(hours, minutes));
     }
 }
 
