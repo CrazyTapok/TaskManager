@@ -9,7 +9,7 @@ internal class TaskRepository(DBContext context) : Repository<Task>(context)
 {
     public override Task<List<Task>> FindAsync(Expression<Func<Task, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _dbSet.Where(predicate)
+        return _dbSet.AsNoTracking().Where(predicate)
             .Include(task => task.AssignedEmployee)
             .Include(task => task.CreateEmployee)
             .ToListAsync(cancellationToken);

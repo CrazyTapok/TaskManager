@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using TaskManager.Infrastructure.Repositories;
 using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Models;
+using TaskManager.Infrastructure.Services.Email;
+using TaskManager.Infrastructure.Services.Reporting;
+using TaskManager.Core.Interfaces.Services.Email;
+using TaskManager.Core.Interfaces.Services.Scheduling;
+using TaskManager.Core.Interfaces.Services.ProjectManagement;
 
 namespace TaskManager.Infrastructure.EF;
 
@@ -22,6 +27,12 @@ public static class StartupInfrastructure
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IRepository<Project>, ProjectRepository>();
         services.AddScoped<IRepository<Core.Models.Task>, TaskRepository>();
+
+        services.AddScoped<IJobScheduler, HangfireJobScheduler>();
+        services.AddScoped<ISmtpClientWrapper, SmtpClientWrapper>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IProjectReportService, HtmlProjectReportService>();
+
 
         services.AddHealthChecks()
                    .AddDbContextCheck<DBContext>();

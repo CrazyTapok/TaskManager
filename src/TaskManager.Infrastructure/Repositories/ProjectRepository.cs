@@ -9,7 +9,7 @@ internal class ProjectRepository(DBContext context) : Repository<Project>(contex
 {
     public override Task<List<Project>> FindAsync(Expression<Func<Project, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _dbSet.Where(predicate)
+        return _dbSet.AsNoTracking().Where(predicate)
             .Include(project => project.Manager)
             .ToListAsync(cancellationToken);
     }

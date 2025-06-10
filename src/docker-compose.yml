@@ -20,8 +20,8 @@ services:
       - SMTP__PASSWORD=${SMTP__PASSWORD}
       - SMTP__HOST=${SMTP__HOST}
       - SMTP__PORT=${SMTP__PORT}
-      - NOTIFICATION__HOUR=${NOTIFICATION__HOUR}
-      - NOTIFICATION__MINUTE=${NOTIFICATION__MINUTE}
+      - NOTIFICATION__ID=${NOTIFICATION__ID}
+      - NOTIFICATION__TIME=${NOTIFICATION__TIME}
     depends_on:
       db:
         condition: service_healthy

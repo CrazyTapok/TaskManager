@@ -11,7 +11,7 @@ using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
 using TaskManager.Core.Infrastructure.Configuration;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.Scheduling;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +43,8 @@ builder.Services.AddServiceModule();
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
+
+//var notificationSettings = builder.Configuration.GetSection(NotificationSettings.SectionName).Get<NotificationSettings>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSettings.SectionName));
 builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));

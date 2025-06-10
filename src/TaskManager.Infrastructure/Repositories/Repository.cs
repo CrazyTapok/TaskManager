@@ -14,7 +14,7 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
 
     public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return _dbSet.ToListAsync(cancellationToken);
+        return _dbSet.AsNoTracking().ToListAsync(cancellationToken);
     }
      
     public ValueTask<TModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -55,6 +55,6 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
 
     public virtual Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _dbSet.Where(predicate).ToListAsync(cancellationToken);
+        return _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
     }
 }

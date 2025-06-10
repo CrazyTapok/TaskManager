@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.Authentication;
 
 namespace TaskManager.API.Controllers;
 

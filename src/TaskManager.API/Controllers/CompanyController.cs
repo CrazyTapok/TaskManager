@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.Core;
+using TaskManager.Core.Interfaces.Services.ProjectManagement;
 using TaskManager.Core.Models;
 
 namespace TaskManager.API.Controllers;

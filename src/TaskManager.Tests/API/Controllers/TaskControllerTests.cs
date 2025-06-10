@@ -4,7 +4,7 @@ using Moq;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.API.Controllers;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.ProjectManagement;
 
 namespace TaskManager.Tests.API.Controllers;
 

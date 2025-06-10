@@ -48,6 +48,9 @@ public class RepositoryTests
     public async Task GetAllEntities()
     {
         // Arrange
+        _context.Set<TestModel>().RemoveRange(_context.Set<TestModel>());
+        await _context.SaveChangesAsync();
+
         var entities = _fixture.CreateMany<TestModel>().ToList();
         await _context.Set<TestModel>().AddRangeAsync(entities);
         await _context.SaveChangesAsync();
