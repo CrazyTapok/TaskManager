@@ -21,7 +21,7 @@ services:
       - SMTP__HOST=${SMTP__HOST}
       - SMTP__PORT=${SMTP__PORT}
       - NOTIFICATION__ID=${NOTIFICATION__ID}
-      - NOTIFICATION__TIME=${NOTIFICATION__TIME}
+      - NOTIFICATION__CRONEXPRESSION=${NOTIFICATION__CRONEXPRESSION}
     depends_on:
       db:
         condition: service_healthy
