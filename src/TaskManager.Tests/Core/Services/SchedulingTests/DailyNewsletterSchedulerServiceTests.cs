@@ -11,7 +11,7 @@ namespace TaskManager.Tests.Core.Services.SchedulingTests;
 public class DailyNewsletterSchedulerServiceTests
 {
     private const string DailyNewsletterJobName = "daily-newsletter-job";
-    private static readonly TimeSpan NotificationTime = new TimeSpan(9, 30, 0);
+    private static readonly string ExpectedCronExpression = "30 7 * * *";
 
     private readonly Mock<INewsletterReportService> _mockNewsletterReportService;
     private readonly Mock<IJobScheduler> _mockJobSchedulerWrapper;
@@ -27,7 +27,7 @@ public class DailyNewsletterSchedulerServiceTests
         var notificationSettings = new NotificationSettings
         {
             Id = DailyNewsletterJobName,
-            Time = NotificationTime
+            CronExpression = ExpectedCronExpression
         };
 
         _mockNotificationSettings.Setup(setting => setting.Value).Returns(notificationSettings);
@@ -45,7 +45,7 @@ public class DailyNewsletterSchedulerServiceTests
         _mockJobSchedulerWrapper.Setup(wrapper => wrapper.ScheduleJob(
                 DailyNewsletterJobName,
                 It.IsAny<Expression<Action>>(),
-                Cron.Daily(NotificationTime.Hours, NotificationTime.Minutes)))
+                ExpectedCronExpression))
             .Verifiable();
 
         // Act
@@ -55,6 +55,6 @@ public class DailyNewsletterSchedulerServiceTests
         _mockJobSchedulerWrapper.Verify(wrapper => wrapper.ScheduleJob(
             DailyNewsletterJobName,
             It.IsAny<Expression<Action>>(),
-            Cron.Daily(NotificationTime.Hours, NotificationTime.Minutes)), Times.Once);
+            ExpectedCronExpression), Times.Once);
     }
 }
