@@ -19,7 +19,7 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
      
     public ValueTask<TModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return _dbSet.FindAsync(id, cancellationToken);
+        return _dbSet.FindAsync([id], cancellationToken);
     }
 
     public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.FindAsync(id, cancellationToken); 
+        var entity = await _dbSet.FindAsync([id], cancellationToken); 
         
         if (entity != null) 
         { 

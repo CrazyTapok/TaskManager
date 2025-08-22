@@ -52,21 +52,6 @@ public class ProjectControllerTests
     }
 
     [Fact]
-    public async Task GetProjectByIdAsync_ReturnsNotFoundResult_WhenProjectDoesNotExist()
-    {
-        // Arrange
-        var projectId = Guid.NewGuid();
-        _mockProjectService.Setup(service => service.GetByIdAsync(projectId, _cancellationToken))
-                           .ReturnsAsync((Project)null);
-
-        // Act
-        var result = await _controller.GetProjectByIdAsync(projectId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
-    }
-
-    [Fact]
     public async Task AddProjectAsync_ReturnsCreatedAtActionResult_WhenProjectIsCreated()
     {
         // Arrange

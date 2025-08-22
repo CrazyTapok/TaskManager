@@ -2,9 +2,9 @@
 using Moq;
 using System.Linq.Expressions;
 using TaskManager.Core.Interfaces.Data;
+using TaskManager.Core.Interfaces.Services.Security;
 using TaskManager.Core.Models;
 using TaskManager.Core.Services.ProjectManagement;
-using TaskManager.Core.Utilities;
 using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Tests.Core.Services.ProjectManagementTests;
@@ -12,6 +12,7 @@ namespace TaskManager.Tests.Core.Services.ProjectManagementTests;
 public class EmployeeServiceTests
 {
     private readonly Mock<IEmployeeRepository> _mockRepo;
+    private readonly Mock<IPasswordHasher> _mockPasswordHasher;
     private readonly EmployeeService _service;
     private readonly CancellationToken _cancellationToken;
     private readonly Fixture _fixture;
@@ -19,7 +20,8 @@ public class EmployeeServiceTests
     public EmployeeServiceTests()
     {
         _mockRepo = new Mock<IEmployeeRepository>();
-        _service = new EmployeeService(_mockRepo.Object);
+        _mockPasswordHasher = new Mock<IPasswordHasher>();
+        _service = new EmployeeService(_mockRepo.Object, _mockPasswordHasher.Object);
         _cancellationToken = new CancellationToken();
         _fixture = new Fixture();
 
@@ -137,6 +139,7 @@ public class EmployeeServiceTests
     {
         // Arrange
         var originalPassword = _fixture.Create<string>();
+        var hashedPassword = _fixture.Create<string>();
         var employee = _fixture.Build<Employee>()
             .With(employee => employee.Email, "test007@example.com")
             .With(employee => employee.Password, originalPassword)
@@ -144,6 +147,14 @@ public class EmployeeServiceTests
 
         _mockRepo.Setup(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken))
             .ReturnsAsync((Employee?)null);
+
+        _mockPasswordHasher
+            .Setup(h => h.HashPassword(originalPassword))
+            .Returns(hashedPassword);
+
+        _mockPasswordHasher
+            .Setup(h => h.VerifyPassword(originalPassword, hashedPassword))
+            .Returns(true);
 
         _mockRepo.Setup(repo => repo.AddAsync(It.IsAny<Employee>(), _cancellationToken))
             .ReturnsAsync((Employee employee, CancellationToken _) => employee);
@@ -157,10 +168,12 @@ public class EmployeeServiceTests
         Assert.NotEqual(originalPassword, result.Password);
 
         // Assuming `PasswordHelper` has a `VerifyPassword` method:
-        Assert.True(PasswordHelper.VerifyPassword(originalPassword, result.Password));
+        Assert.True(_mockPasswordHasher.Object.VerifyPassword(originalPassword, result.Password));
 
         _mockRepo.Verify(repo => repo.GetByEmailAsync(employee.Email, _cancellationToken), Times.Once);
-        _mockRepo.Verify(repo => repo.AddAsync(It.Is<Employee>(employee => employee.Password != originalPassword && PasswordHelper.VerifyPassword(originalPassword, employee.Password)), _cancellationToken), Times.Once);
+        _mockPasswordHasher.Verify(h => h.HashPassword(originalPassword), Times.Once);
+        _mockPasswordHasher.Verify(h => h.VerifyPassword(originalPassword, hashedPassword), Times.Once);
+        _mockRepo.Verify(repo => repo.AddAsync(It.Is<Employee>(e => e.Password == hashedPassword), _cancellationToken), Times.Once);
     }
 
     [Fact]
@@ -203,5 +216,4 @@ public class EmployeeServiceTests
         Assert.Equal(expectedCount, result.Count);
         Assert.All(result, employee => Assert.True(employee.IsDailyNewsletterEnabled));
     }
-
 }

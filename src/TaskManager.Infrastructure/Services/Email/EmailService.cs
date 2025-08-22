@@ -1,10 +1,9 @@
-﻿using MimeKit;
-using MailKit.Security;
-using TaskManager.Core.Models;
-using Task = System.Threading.Tasks.Task;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using TaskManager.Core.Infrastructure.Configuration;
 using TaskManager.Core.Interfaces.Services.Email;
+using TaskManager.Core.Models;
+using TaskManager.Core.Models.Email;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Infrastructure.Services.Email;
 
@@ -21,19 +20,23 @@ internal class EmailService : IEmailService
 
     public async Task SendEmailAsync(EmailNotification emailNotification, CancellationToken cancellationToken = default)
     {
-        await _smtpClient.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, SecureSocketOptions.StartTls, cancellationToken);
-        await _smtpClient.AuthenticateAsync(_smtpSettings.User, _smtpSettings.Password, cancellationToken);
-
-        var message = new MimeMessage
+        var connectionOptions = new SmtpConnectionOptions
         {
-            Subject = emailNotification.Subject
+            Host = _smtpSettings.Host,
+            Port = _smtpSettings.Port,
+            UseSsl = true
         };
 
-        message.From.Add(new MailboxAddress("Task Manager App", _smtpSettings.User));
-        message.To.Add(new MailboxAddress(emailNotification.RecipientName, emailNotification.RecipientEmail));
+        await _smtpClient.ConnectAsync(connectionOptions, cancellationToken);
+        await _smtpClient.AuthenticateAsync(_smtpSettings.User, _smtpSettings.Password, cancellationToken);
 
-        var builder = new BodyBuilder { HtmlBody = emailNotification.Body };
-        message.Body = builder.ToMessageBody();
+        var message = new EmailMessage
+        {
+            From = _smtpSettings.User,
+            To = emailNotification.RecipientEmail,
+            Subject = emailNotification.Subject,
+            Body = emailNotification.Body
+        };
 
         await _smtpClient.SendAsync(message, cancellationToken);
         await _smtpClient.DisconnectAsync(quit: true, cancellationToken);

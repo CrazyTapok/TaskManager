@@ -11,20 +11,12 @@ namespace TaskManager.API.Controllers;
 [Route("api/employees")]
 public class EmployeeController(IEmployeeService employeeService, IProjectService projectService, ITaskService taskService) : ControllerBase
 {
-    private readonly IEmployeeService _employeeService = employeeService;
-    private readonly IProjectService _projectService = projectService;
-    private readonly ITaskService _taskService = taskService;
 
     [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var employee = await _employeeService.GetByIdAsync(id, cancellationToken);
-        if (employee == null)
-        {
-            return NotFound();
-        }
-
+        var employee = await employeeService.GetByIdAsync(id, cancellationToken);
         var response = employee.MapToEmployeeResponse();
 
         return Ok(response);
@@ -36,7 +28,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
         try
         {
             var employee = request.ToEmployee();
-            var createdEmployee = await _employeeService.RegisterAsync(employee, cancellationToken);
+            var createdEmployee = await employeeService.RegisterAsync(employee, cancellationToken);
 
             var response = createdEmployee.MapToEmployeeResponse();
 
@@ -57,7 +49,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] EmployeeRequest request, CancellationToken cancellationToken = default)
     {
         var employee = request.ToEmployee(id);
-        var updateSuccessful = await _employeeService.UpdateAsync(employee, cancellationToken);
+        var updateSuccessful = await employeeService.UpdateAsync(employee, cancellationToken);
         
         if (!updateSuccessful)
         {
@@ -71,7 +63,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteEmployeeAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await _employeeService.DeleteAsync(id, cancellationToken);
+        await employeeService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
@@ -79,7 +71,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     [HttpGet("{employeeId:guid}/projects")]
     public async Task<ActionResult<List<ProjectResponse>>> GetProjectsByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        var projects = await _projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
+        var projects = await projectService.GetProjectsByEmployeeIdAsync(employeeId, cancellationToken);
         var response = projects.Select(project => project.MapToProjectResponse()).ToList();
 
         return Ok(response);
@@ -89,7 +81,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     [HttpGet("{employeeId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        var tasks = await _taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
+        var tasks = await taskService.GetTasksByEmployeeIdAsync(employeeId, cancellationToken);
         var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
@@ -99,7 +91,7 @@ public class EmployeeController(IEmployeeService employeeService, IProjectServic
     [HttpGet]
     public async Task<ActionResult<List<EmployeeResponse>>> ListAllEmployeesAsync(CancellationToken cancellationToken = default)
     {
-        var employees = await _employeeService.ListAllAsync(cancellationToken);
+        var employees = await employeeService.ListAllAsync(cancellationToken);
         var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
 
         return Ok(response);

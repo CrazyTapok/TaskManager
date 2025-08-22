@@ -53,21 +53,6 @@ public class EmployeeControllerTests
     }
 
     [Fact]
-    public async Task GetEmployeeByIdAsync_ReturnsNotFoundResult_WhenEmployeeDoesNotExist()
-    {
-        // Arrange
-        var employeeId = Guid.NewGuid();
-        _mockEmployeeService.Setup(service => service.GetByIdAsync(employeeId, _cancellationToken))
-                            .ReturnsAsync((Employee)null);
-
-        // Act
-        var result = await _controller.GetEmployeeByIdAsync(employeeId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
-    }
-
-    [Fact]
     public async Task UpdateEmployeeAsync_ReturnsNoContentResult_WhenEmployeeIsUpdated()
     {
         // Arrange

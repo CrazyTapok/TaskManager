@@ -1,18 +1,20 @@
 ﻿using TaskManager.Core.Interfaces.Data;
 using TaskManager.Core.Interfaces.Services.ProjectManagement;
+using TaskManager.Core.Interfaces.Services.Security;
 using TaskManager.Core.Models;
 using TaskManager.Core.Services.Base;
-using TaskManager.Core.Utilities;
 
 namespace TaskManager.Core.Services.ProjectManagement;
 
 internal class EmployeeService : Service<Employee>, IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public EmployeeService(IEmployeeRepository employeeRepository) : base(employeeRepository)
+    public EmployeeService(IEmployeeRepository employeeRepository, IPasswordHasher passwordHasher) : base(employeeRepository)
     {
         _employeeRepository = employeeRepository;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<Employee?> RegisterAsync(Employee employee, CancellationToken cancellationToken = default)
@@ -25,7 +27,7 @@ internal class EmployeeService : Service<Employee>, IEmployeeService
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        employee.Password = PasswordHelper.HashPassword(employee.Password);
+        employee.Password = _passwordHasher.HashPassword(employee.Password);
 
         return await _employeeRepository.AddAsync(employee, cancellationToken);
     }

@@ -1,5 +1,7 @@
-﻿namespace TaskManager.Core.Interfaces.Services.ProjectManagement;
-using Task = Models.Task;
+﻿using Task = TaskManager.Core.Models.Task;
+
+namespace TaskManager.Core.Interfaces.Services.ProjectManagement;
+
 
 public interface IProjectReportService
 {

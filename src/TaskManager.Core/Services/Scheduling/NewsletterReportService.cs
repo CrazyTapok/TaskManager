@@ -22,9 +22,11 @@ internal class NewsletterReportService : INewsletterReportService
         _emailService = emailService;
     }
 
-    public async Task ExecuteDailyJob(CancellationToken cancellationToken = default)
+    public async Task SendDailyProjectReportsAsync(CancellationToken cancellationToken = default)
     {
         var employees = await _employeeService.GetEmployeesWithDailyNewsletterEnabledAsync(cancellationToken);
+
+        var tasks = new List<Task>();
 
         foreach (var employee in employees)
         {
@@ -40,8 +42,10 @@ internal class NewsletterReportService : INewsletterReportService
                     Body = reportContent
                 };
 
-                await _emailService.SendEmailAsync(emailNotification, cancellationToken);
+                tasks.Add(_emailService.SendEmailAsync(emailNotification, cancellationToken));
             }
         }
+
+        await Task.WhenAll(tasks);
     }
 }

@@ -56,7 +56,7 @@ public class NewsletterReportServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _newsletterReportService.ExecuteDailyJob(_cancellationToken);
+        await _newsletterReportService.SendDailyProjectReportsAsync(_cancellationToken);
 
         // Assert
         _mockEmployeeService.Verify(service => service.GetEmployeesWithDailyNewsletterEnabledAsync(_cancellationToken), Times.Once);

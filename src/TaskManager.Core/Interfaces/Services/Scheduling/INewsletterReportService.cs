@@ -2,5 +2,5 @@
 
 public interface INewsletterReportService
 {
-    Task ExecuteDailyJob(CancellationToken cancellationToken = default);
+    Task SendDailyProjectReportsAsync(CancellationToken cancellationToken = default);
 }

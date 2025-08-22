@@ -51,21 +51,6 @@ public class CompanyControllerTests
     }
 
     [Fact]
-    public async Task GetCompanyByIdAsync_ReturnsNotFoundResult_WhenCompanyDoesNotExist()
-    {
-        // Arrange
-        var companyId = Guid.NewGuid();
-        _mockCompanyService.Setup(service => service.GetByIdAsync(companyId, _cancellationToken))
-                           .ReturnsAsync((Company)null);
-
-        // Act
-        var result = await _controller.GetCompanyByIdAsync(companyId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
-    }
-
-    [Fact]
     public async Task AddCompanyAsync_ReturnsCreatedAtActionResult_WhenCompanyIsCreated()
     {
         // Arrange

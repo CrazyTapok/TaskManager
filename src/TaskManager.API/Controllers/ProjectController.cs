@@ -11,20 +11,12 @@ namespace TaskManager.API.Controllers;
 [Route("api/projects")]
 public class ProjectController(IProjectService projectService, IEmployeeService employeeService, ITaskService taskService) : ControllerBase
 {
-    private readonly IProjectService _projectService = projectService;
-    private readonly IEmployeeService _employeeService = employeeService;
-    private readonly ITaskService _taskService = taskService;
 
     [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var project = await _projectService.GetByIdAsync(id, cancellationToken);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
+        var project = await projectService.GetByIdAsync(id, cancellationToken);
         var response = project.MapToProjectResponse();
 
         return Ok(response);
@@ -35,7 +27,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     public async Task<ActionResult<ProjectResponse>> AddProjectAsync([FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
         var project = request.ToProject();
-        var createdProject = await _projectService.AddAsync(project, cancellationToken);
+        var createdProject = await projectService.AddAsync(project, cancellationToken);
 
         var response = createdProject.MapToProjectResponse();
 
@@ -47,7 +39,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     public async Task<IActionResult> UpdateProjectAsync(Guid id, [FromBody] ProjectRequest request, CancellationToken cancellationToken = default)
     {
         var project = request.ToProject(id);
-        var updateSuccessful = await _projectService.UpdateAsync(project, cancellationToken);
+        var updateSuccessful = await projectService.UpdateAsync(project, cancellationToken);
 
         if (!updateSuccessful)
         {
@@ -61,7 +53,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteProjectAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await _projectService.DeleteAsync(id, cancellationToken);
+        await projectService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
@@ -69,7 +61,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     [HttpGet("{projectId:guid}/employees")]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployeesByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        var employees = await _employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
+        var employees = await employeeService.GetEmployeesByProjectIdAsync(projectId, cancellationToken);
         var response = employees.Select(employee => employee.MapToEmployeeResponse()).ToList();
 
         return Ok(response);
@@ -79,7 +71,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     [HttpGet("{projectId:guid}/tasks")]
     public async Task<ActionResult<List<TaskResponse>>> GetTasksByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
     {
-        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
+        var tasks = await taskService.GetTasksByProjectIdAsync(projectId, cancellationToken);
         var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
@@ -89,7 +81,7 @@ public class ProjectController(IProjectService projectService, IEmployeeService 
     [HttpGet]
     public async Task<ActionResult<List<ProjectResponse>>> ListAllProjectsAsync(CancellationToken cancellationToken = default)
     {
-        var projects = await _projectService.ListAllAsync(cancellationToken);
+        var projects = await projectService.ListAllAsync(cancellationToken);
         var response = projects.Select(project => project.MapToProjectResponse()).ToList();
 
         return Ok(response);

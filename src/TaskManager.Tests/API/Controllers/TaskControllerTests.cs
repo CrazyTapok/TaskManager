@@ -46,21 +46,6 @@ public class TaskControllerTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_ReturnsNotFoundResult_WhenTaskDoesNotExist()
-    {
-        // Arrange
-        var taskId = Guid.NewGuid();
-        _mockTaskService.Setup(service => service.GetByIdAsync(taskId, _cancellationToken))
-                        .ReturnsAsync((TaskManager.Core.Models.Task)null);
-
-        // Act
-        var result = await _controller.GetByIdAsync(taskId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
-    }
-
-    [Fact]
     public async Task AddAsync_ReturnsCreatedAtActionResult_WhenTaskIsCreated()
     {
         // Arrange

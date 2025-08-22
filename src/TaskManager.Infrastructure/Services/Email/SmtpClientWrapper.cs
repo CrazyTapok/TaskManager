@@ -2,6 +2,7 @@
 using MailKit.Security;
 using MimeKit;
 using TaskManager.Core.Interfaces.Services.Email;
+using TaskManager.Core.Models.Email;
 
 namespace TaskManager.Infrastructure.Services.Email;
 
@@ -9,9 +10,11 @@ internal class SmtpClientWrapper : ISmtpClientWrapper
 {
     private readonly SmtpClient _smtpClient = new();
 
-    public Task ConnectAsync(string host, int port, SecureSocketOptions options, CancellationToken cancellationToken = default)
+    public Task ConnectAsync(SmtpConnectionOptions options, CancellationToken cancellationToken = default)
     {
-        return _smtpClient.ConnectAsync(host, port, options, cancellationToken);
+        var secureOption = options.UseSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+       
+        return _smtpClient.ConnectAsync(options.Host, options.Port, secureOption, cancellationToken);
     }
 
     public Task AuthenticateAsync(string user, string password, CancellationToken cancellationToken = default)
@@ -19,9 +22,15 @@ internal class SmtpClientWrapper : ISmtpClientWrapper
         return _smtpClient.AuthenticateAsync(user, password, cancellationToken);
     }
 
-    public Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default)
+    public Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
-        return _smtpClient.SendAsync(message, cancellationToken);
+        var mimeMessage = new MimeMessage();
+        mimeMessage.From.Add(MailboxAddress.Parse(message.From));
+        mimeMessage.To.Add(MailboxAddress.Parse(message.To));
+        mimeMessage.Subject = message.Subject;
+        mimeMessage.Body = new TextPart("html") { Text = message.Body };
+
+        return _smtpClient.SendAsync(mimeMessage, cancellationToken);
     }
 
     public Task DisconnectAsync(bool quit, CancellationToken cancellationToken = default)

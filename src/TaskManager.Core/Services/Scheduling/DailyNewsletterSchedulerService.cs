@@ -24,7 +24,7 @@ internal class DailyNewsletterSchedulerService : IDailyNewsletterSchedulerServic
     {
         _jobSchedulerWrapper.ScheduleJob(
             jobId: _notificationSettings.Id,
-            () => _newsletterReportService.ExecuteDailyJob(default),
+            () => _newsletterReportService.SendDailyProjectReportsAsync(default),
             cronExpression: _notificationSettings.CronExpression);
     }
 }

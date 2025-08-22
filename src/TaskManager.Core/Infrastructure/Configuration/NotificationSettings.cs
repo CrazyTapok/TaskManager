@@ -1,6 +1,4 @@
-﻿using Hangfire;
-
-namespace TaskManager.Core.Infrastructure.Configuration;
+﻿namespace TaskManager.Core.Infrastructure.Configuration;
 
 public class NotificationSettings
 {

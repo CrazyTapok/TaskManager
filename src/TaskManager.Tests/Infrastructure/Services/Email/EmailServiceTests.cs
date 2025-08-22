@@ -1,13 +1,12 @@
 ﻿using AutoFixture;
-using MimeKit;
+using Microsoft.Extensions.Options;
 using Moq;
 using TaskManager.Core.Infrastructure.Configuration;
-using TaskManager.Core.Models;
-using Microsoft.Extensions.Options;
-using Task = System.Threading.Tasks.Task;
-using MailKit.Security;
-using TaskManager.Infrastructure.Services.Email;
 using TaskManager.Core.Interfaces.Services.Email;
+using TaskManager.Core.Models;
+using TaskManager.Core.Models.Email;
+using TaskManager.Infrastructure.Services.Email;
+using Task = System.Threading.Tasks.Task;
 
 namespace TaskManager.Tests.Infrastructure.Services.Email;
 
@@ -31,22 +30,25 @@ public class EmailServiceTests
             .With(smtp => smtp.Password, "password")
             .Create();
 
-        _smtpSettingsMock.Setup(s => s.Value).Returns(smtpSettings);
+        _smtpSettingsMock.Setup(smtp => smtp.Value).Returns(smtpSettings);
 
-        // Мокируем сетевые вызовы и проверяем, что они вызываются
-        _smtpClientMock.Setup(client => client.ConnectAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<SecureSocketOptions>(), It.IsAny<CancellationToken>()))
+        _smtpClientMock
+            .Setup(client => client.ConnectAsync(It.IsAny<SmtpConnectionOptions>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        _smtpClientMock.Setup(client => client.AuthenticateAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _smtpClientMock
+            .Setup(client => client.AuthenticateAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        _smtpClientMock.Setup(client => client.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>()))
+        _smtpClientMock
+            .Setup(client => client.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        _smtpClientMock.Setup(client => client.DisconnectAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        _smtpClientMock
+            .Setup(client => client.DisconnectAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
@@ -63,12 +65,26 @@ public class EmailServiceTests
         await _emailService.SendEmailAsync(emailNotification);
 
         // Assert
-        _smtpClientMock.Verify(client => client.ConnectAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<SecureSocketOptions>(), It.IsAny<CancellationToken>()), Times.Once);
+        _smtpClientMock.Verify(client => client.ConnectAsync(
+                It.Is<SmtpConnectionOptions>(option =>
+                    option.Host == "smtp.test.com" &&
+                    option.Port == 587 &&
+                    option.UseSsl == true
+                ), 
+                It.IsAny<CancellationToken>()),
+                Times.Once);
 
-        _smtpClientMock.Verify(client => client.AuthenticateAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _smtpClientMock.Verify(client => client.AuthenticateAsync("test@test.com", "password", It.IsAny<CancellationToken>()), Times.Once);
 
-        _smtpClientMock.Verify(client => client.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>()), Times.Once);
+        _smtpClientMock.Verify(client =>
+            client.SendAsync(It.Is<EmailMessage>(message =>
+                message.Subject == emailNotification.Subject &&
+                message.Body == emailNotification.Body &&
+                message.To == emailNotification.RecipientEmail
+            ), 
+            It.IsAny<CancellationToken>()),
+            Times.Once);
 
-        _smtpClientMock.Verify(client => client.DisconnectAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
+        _smtpClientMock.Verify(client => client.DisconnectAsync(true, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

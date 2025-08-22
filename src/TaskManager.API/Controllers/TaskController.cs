@@ -11,20 +11,14 @@ namespace TaskManager.API.Controllers;
 [Route("api/tasks")]
 public class TaskController(ITaskService taskService) : ControllerBase
 {
-    private readonly ITaskService _taskService = taskService;
 
     [Authorize(Roles = "Admin,ProjectManager,Developer")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<TaskResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var task = await _taskService.GetByIdAsync(id, cancellationToken);
-        if (task == null)
-        {
-            return NotFound();
-        }
-
+        var task = await taskService.GetByIdAsync(id, cancellationToken);
         var response = task.MapToTaskResponse();
-
+       
         return Ok(response);
     }
 
@@ -33,7 +27,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
     public async Task<ActionResult<TaskResponse>> AddAsync([FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
         var task = request.ToTask();
-        var createdTask = await _taskService.AddAsync(task, cancellationToken);
+        var createdTask = await taskService.AddAsync(task, cancellationToken);
         
         var response = createdTask.MapToTaskResponse();
 
@@ -45,7 +39,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
     public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] TaskRequest request, CancellationToken cancellationToken = default)
     {
         var task = request.ToTask(id);
-        var updateSuccessful = await _taskService.UpdateAsync(task, cancellationToken);
+        var updateSuccessful = await taskService.UpdateAsync(task, cancellationToken);
       
         if (!updateSuccessful)
         {
@@ -59,7 +53,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await _taskService.DeleteAsync(id, cancellationToken);
+        await taskService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
@@ -67,7 +61,7 @@ public class TaskController(ITaskService taskService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<TaskResponse>>> ListAllTasksAsync(CancellationToken cancellationToken = default)
     {
-        var tasks = await _taskService.ListAllAsync(cancellationToken);
+        var tasks = await taskService.ListAllAsync(cancellationToken);
         var response = tasks.Select(task => task.MapToTaskResponse()).ToList();
 
         return Ok(response);
