@@ -69,4 +69,60 @@ public class EmployeeRepositoryTests
         Assert.NotNull(result);
         Assert.Equal(employeeEmail, result!.Email);
     }
+
+    [Fact]
+    public async Task GetByEmailAsync_ReturnsNullForNonExistingEmail()
+    {
+        // Arrange
+        var nonExistingEmail = "nonexisting@example.com";
+        var employees = _fixture.CreateMany<Employee>().ToList();
+        await _context.Set<Employee>().AddRangeAsync(employees);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _employeeRepository.GetByEmailAsync(nonExistingEmail, _cancellationToken);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetNewsletterEnabledEmployeesAsync_ReturnsOnlyEnabledEmployees()
+    {
+        // Arrange
+        _context.Set<Employee>().RemoveRange(_context.Set<Employee>());
+        await _context.SaveChangesAsync();
+
+        var enabledEmployees = _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, true).CreateMany(2).ToList();
+        var disabledEmployees = _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, false).CreateMany(2).ToList();
+
+        await _context.Set<Employee>().AddRangeAsync(enabledEmployees);
+        await _context.Set<Employee>().AddRangeAsync(disabledEmployees);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _employeeRepository.GetNewsletterEnabledEmployeesAsync(_cancellationToken);
+
+        // Assert
+        Assert.Equal(enabledEmployees.Count, result.Count);
+        Assert.All(result, employee => Assert.True(employee.IsDailyNewsletterEnabled));
+    }
+
+    [Fact]
+    public async Task GetNewsletterEnabledEmployeesAsync_ReturnsEmptyListWhenNoEnabledEmployees()
+    {
+        // Arrange
+        _context.Set<Employee>().RemoveRange(_context.Set<Employee>());
+        await _context.SaveChangesAsync();
+
+        var disabledEmployees = _fixture.Build<Employee>().With(employee => employee.IsDailyNewsletterEnabled, false).CreateMany(3).ToList();
+        await _context.Set<Employee>().AddRangeAsync(disabledEmployees);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _employeeRepository.GetNewsletterEnabledEmployeesAsync(_cancellationToken);
+
+        // Assert
+        Assert.Empty(result);
+    }
 }

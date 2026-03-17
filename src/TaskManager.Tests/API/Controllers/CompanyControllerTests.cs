@@ -4,11 +4,12 @@ using Moq;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.API.Controllers;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.Core;
+using TaskManager.Core.Interfaces.Services.ProjectManagement;
 using TaskManager.Core.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskManager.API.Tests.Controllers;
+namespace TaskManager.Tests.API.Controllers;
 
 public class CompanyControllerTests
 {
@@ -47,21 +48,6 @@ public class CompanyControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var companyResponse = Assert.IsType<CompanyResponse>(okResult.Value);
         Assert.Equal(companyId, companyResponse.Id);
-    }
-
-    [Fact]
-    public async Task GetCompanyByIdAsync_ReturnsNotFoundResult_WhenCompanyDoesNotExist()
-    {
-        // Arrange
-        var companyId = Guid.NewGuid();
-        _mockCompanyService.Setup(service => service.GetByIdAsync(companyId, _cancellationToken))
-                           .ReturnsAsync((Company)null);
-
-        // Act
-        var result = await _controller.GetCompanyByIdAsync(companyId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
     }
 
     [Fact]

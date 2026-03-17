@@ -1,4 +1,5 @@
 using AutoFixture;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Infrastructure.EF;
 using TaskManager.Infrastructure.Repositories;
@@ -7,8 +8,9 @@ using TaskManager.Tests.TestModels;
 
 namespace TaskManager.Tests.Infrastructure.Repositories;
 
-public class RepositoryTests
+public class RepositoryTests : IDisposable
 {
+    private readonly SqliteConnection _connection;
     private readonly DbContextOptions<DBContext> _options;
     private readonly TestDBContext _context;
     private readonly Repository<TestModel> _repository;
@@ -17,12 +19,19 @@ public class RepositoryTests
 
     public RepositoryTests()
     {
-        _options = new DbContextOptionsBuilder<DBContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
-        _context = new TestDBContext(_options);
-        _fixture = new Fixture();
+        _connection = new SqliteConnection("Filename=:memory:");
+        _connection.Open();
 
+        _options = new DbContextOptionsBuilder<DBContext>()
+            .UseSqlite(_connection)
+            .Options;
+
+        _context = new TestDBContext(_options);
+
+        // 3. Создаем схему таблиц в памяти
+        _context.Database.EnsureCreated();
+
+        _fixture = new Fixture();
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(behavior => _fixture.Behaviors.Remove(behavior));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -48,6 +57,9 @@ public class RepositoryTests
     public async Task GetAllEntities()
     {
         // Arrange
+        _context.Set<TestModel>().RemoveRange(_context.Set<TestModel>());
+        await _context.SaveChangesAsync();
+
         var entities = _fixture.CreateMany<TestModel>().ToList();
         await _context.Set<TestModel>().AddRangeAsync(entities);
         await _context.SaveChangesAsync();
@@ -104,8 +116,16 @@ public class RepositoryTests
         await _repository.DeleteAsync(entity.Id, _cancellationToken);
 
         // Assert
+        _context.ChangeTracker.Clear();
+
         var deletedEntity = await _context.Set<TestModel>().FindAsync(entity.Id);
         Assert.NotNull(deletedEntity);
         Assert.True(deletedEntity.IsDeleted);
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+        _connection.Dispose(); // Закрываем соединение, чтобы освободить память
     }
 }

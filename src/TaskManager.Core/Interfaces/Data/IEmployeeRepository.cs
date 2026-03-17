@@ -5,4 +5,6 @@ namespace TaskManager.Core.Interfaces.Data;
 public interface IEmployeeRepository : IRepository<Employee>
 {
     Task<Employee?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+
+    Task<List<Employee>> GetNewsletterEnabledEmployeesAsync(CancellationToken cancellationToken);
 }

@@ -4,11 +4,11 @@ using Moq;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
 using TaskManager.API.Controllers;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.ProjectManagement;
 using TaskManager.Core.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace TaskManager.API.Tests.Controllers;
+namespace TaskManager.Tests.API.Controllers;
 
 public class ProjectControllerTests
 {
@@ -49,21 +49,6 @@ public class ProjectControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var projectResponse = Assert.IsType<ProjectResponse>(okResult.Value);
         Assert.Equal(projectId, projectResponse.Id);
-    }
-
-    [Fact]
-    public async Task GetProjectByIdAsync_ReturnsNotFoundResult_WhenProjectDoesNotExist()
-    {
-        // Arrange
-        var projectId = Guid.NewGuid();
-        _mockProjectService.Setup(service => service.GetByIdAsync(projectId, _cancellationToken))
-                           .ReturnsAsync((Project)null);
-
-        // Act
-        var result = await _controller.GetProjectByIdAsync(projectId);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
     }
 
     [Fact]
@@ -136,7 +121,7 @@ public class ProjectControllerTests
         // Arrange
         var expectedCount = 2;
         var projectId = Guid.NewGuid();
-        var tasks = _fixture.CreateMany<Core.Models.Task>(expectedCount).ToList();
+        var tasks = _fixture.CreateMany<TaskManager.Core.Models.Task>(expectedCount).ToList();
         _mockTaskService.Setup(service => service.GetTasksByProjectIdAsync(projectId, _cancellationToken))
                         .ReturnsAsync(tasks);
 

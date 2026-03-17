@@ -1,4 +1,6 @@
 using DotNetEnv;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +11,7 @@ using TaskManager.API.Contracts.Extensions;
 using TaskManager.API.Contracts.HealthChecks;
 using TaskManager.Core.Infrastructure;
 using TaskManager.Core.Infrastructure.Configuration;
+using TaskManager.Core.Interfaces.Services.Scheduling;
 using TaskManager.Infrastructure.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +43,10 @@ builder.Services.AddServiceModule();
 CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection(SmtpSettings.SectionName));
+builder.Services.Configure<NotificationSettings>(builder.Configuration.GetSection(NotificationSettings.SectionName));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -62,7 +68,24 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHangfire(config => config
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            PrepareSchemaIfNecessary = true,
+            QueuePollInterval = TimeSpan.FromSeconds(15)
+        }));
+
+builder.Services.AddHangfireServer();
+
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var jobScheduler = scope.ServiceProvider.GetRequiredService<IDailyNewsletterSchedulerService>();
+    jobScheduler.ConfigureJobs();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -77,6 +100,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseHealthChecks("/health", new HealthCheckOptions
 {

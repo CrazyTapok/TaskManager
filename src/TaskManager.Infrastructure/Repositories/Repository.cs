@@ -14,12 +14,12 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
 
     public Task<List<TModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return _dbSet.ToListAsync(cancellationToken);
+        return _dbSet.AsNoTracking().ToListAsync(cancellationToken);
     }
      
     public ValueTask<TModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return _dbSet.FindAsync(id, cancellationToken);
+        return _dbSet.FindAsync([id], cancellationToken);
     }
 
     public async Task<TModel> AddAsync(TModel model, CancellationToken cancellationToken = default)
@@ -42,19 +42,13 @@ internal class Repository<TModel>(DBContext context) : IRepository<TModel> where
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.FindAsync(id, cancellationToken); 
-        
-        if (entity != null) 
-        { 
-            entity.IsDeleted = true;
+        await _dbSet.Where(entity => entity.Id == id)
+              .ExecuteUpdateAsync(setter => setter.SetProperty(entity => entity.IsDeleted, true), cancellationToken);
 
-            context.Entry(entity).State = EntityState.Modified; 
-            await context.SaveChangesAsync(cancellationToken); 
-        }
     }
 
     public virtual Task<List<TModel>> FindAsync(Expression<Func<TModel, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _dbSet.Where(predicate).ToListAsync(cancellationToken);
+        return _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
     }
 }

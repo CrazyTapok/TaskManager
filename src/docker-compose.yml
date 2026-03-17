@@ -13,9 +13,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManager_docker_db;User Id=${SA_USER_ID};Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;
-      - JWT_KEY=${JWT_KEY}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - JWT__KEY=${JWT__KEY}
+      - JWT__ISSUER=${JWT__ISSUER}
+      - JWT__AUDIENCE=${JWT__AUDIENCE}
+      - SMTP__USER=${SMTP__USER}
+      - SMTP__PASSWORD=${SMTP__PASSWORD}
+      - SMTP__HOST=${SMTP__HOST}
+      - SMTP__PORT=${SMTP__PORT}
+      - NOTIFICATION__ID=${NOTIFICATION__ID}
+      - NOTIFICATION__CRONEXPRESSION=${NOTIFICATION__CRONEXPRESSION}
     depends_on:
       db:
         condition: service_healthy

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TaskManager.API.Contracts.Requests;
 using TaskManager.API.Contracts.Responses;
-using TaskManager.Core.Interfaces.Services;
+using TaskManager.Core.Interfaces.Services.Authentication;
 
 namespace TaskManager.API.Controllers;
 
@@ -9,14 +9,13 @@ namespace TaskManager.API.Controllers;
 [Route("api/sessions")]
 public class SessionController(IAuthService authService) : ControllerBase
 {
-    private readonly IAuthService _authService = authService;
 
     [HttpPost]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var token = await _authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
+            var token = await authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
             return Ok(new LoginResponse(token));
         }
         catch (UnauthorizedAccessException ex)
